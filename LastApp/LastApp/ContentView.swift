@@ -3,36 +3,59 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(AppState.self) private var appState
+    @GestureState private var dragOffset: CGFloat = 0
+
+    private let sidebarWidth: CGFloat = AppTheme.sidebarWidth
+
+    private var currentOffset: CGFloat {
+        if appState.isSidebarOpen {
+            return min(0, dragOffset)
+        } else {
+            return max(-sidebarWidth, -sidebarWidth + max(0, dragOffset))
+        }
+    }
+
+    private var progress: CGFloat {
+        (sidebarWidth + currentOffset) / sidebarWidth
+    }
 
     var body: some View {
         ZStack(alignment: .leading) {
             mainContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            if appState.isSidebarOpen {
-                Color.black.opacity(0.35)
-                    .ignoresSafeArea()
-                    .onTapGesture { appState.isSidebarOpen = false }
-                    .transition(.opacity)
-            }
+            Color.black.opacity(0.35 * progress)
+                .ignoresSafeArea()
+                .allowsHitTesting(progress > 0.01)
+                .onTapGesture {
+                    appState.isSidebarOpen = false
+                }
 
-            if appState.isSidebarOpen {
-                SidebarView()
-                    .ignoresSafeArea()
-                    .transition(.move(edge: .leading))
-                    .shadow(color: .black.opacity(0.2), radius: 20, x: 8, y: 0)
-            }
+            SidebarView()
+                .ignoresSafeArea()
+                .offset(x: currentOffset)
+                .shadow(color: .black.opacity(0.2 * progress), radius: 20, x: 8, y: 0)
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: appState.isSidebarOpen)
         .gesture(
             DragGesture(minimumDistance: 20, coordinateSpace: .global)
+                .updating($dragOffset) { value, state, _ in
+                    let openingFromEdge = !appState.isSidebarOpen && value.startLocation.x < 44
+                    guard openingFromEdge || appState.isSidebarOpen else { return }
+                    state = value.translation.width
+                }
                 .onEnded { value in
-                    let startX = value.startLocation.x
                     let translation = value.translation.width
-                    if startX < 44 && translation > 60 {
-                        appState.isSidebarOpen = true
-                    } else if translation < -60 && appState.isSidebarOpen {
-                        appState.isSidebarOpen = false
+                    let velocity = value.predictedEndTranslation.width
+                    if !appState.isSidebarOpen {
+                        guard value.startLocation.x < 44 else { return }
+                        if translation > sidebarWidth * 0.3 || velocity > sidebarWidth {
+                            appState.isSidebarOpen = true
+                        }
+                    } else {
+                        if translation < -(sidebarWidth * 0.3) || velocity < -(sidebarWidth * 0.5) {
+                            appState.isSidebarOpen = false
+                        }
                     }
                 }
         )
@@ -70,7 +93,6 @@ struct ContentView: View {
         }
     }
 }
-
 
 #Preview {
     ContentView()
