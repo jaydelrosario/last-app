@@ -61,3 +61,72 @@ final class DateHelperTests: XCTestCase {
         XCTAssertTrue(a.isSameDay(as: b))
     }
 }
+
+// MARK: - Habit Streak Tests
+
+import SwiftData
+
+@MainActor
+final class HabitStreakTests: XCTestCase {
+    private var container: ModelContainer!
+    private var context: ModelContext!
+
+    override func setUpWithError() throws {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        container = try ModelContainer(
+            for: Habit.self, HabitLog.self,
+            configurations: config
+        )
+        context = container.mainContext
+    }
+
+    override func tearDownWithError() throws {
+        container = nil
+        context = nil
+    }
+
+    func test_streak_noLogs_isZero() throws {
+        let habit = Habit(name: "Test", frequency: .daily)
+        context.insert(habit)
+        XCTAssertEqual(habit.streak, 0)
+    }
+
+    func test_streak_onlyToday_isOne() throws {
+        let habit = Habit(name: "Test", frequency: .daily)
+        context.insert(habit)
+        let log = HabitLog(date: Date(), isCompleted: true, habit: habit)
+        context.insert(log)
+        XCTAssertEqual(habit.streak, 1)
+    }
+
+    func test_streak_todayAndYesterday_isTwo() throws {
+        let habit = Habit(name: "Test", frequency: .daily)
+        context.insert(habit)
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        context.insert(HabitLog(date: Date(), isCompleted: true, habit: habit))
+        context.insert(HabitLog(date: yesterday, isCompleted: true, habit: habit))
+        XCTAssertEqual(habit.streak, 2)
+    }
+
+    func test_streak_gapBreaksStreak() throws {
+        let habit = Habit(name: "Test", frequency: .daily)
+        context.insert(habit)
+        let twoDaysAgo = Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+        context.insert(HabitLog(date: Date(), isCompleted: true, habit: habit))
+        context.insert(HabitLog(date: twoDaysAgo, isCompleted: true, habit: habit))
+        XCTAssertEqual(habit.streak, 1)
+    }
+
+    func test_isCompletedToday_true() throws {
+        let habit = Habit(name: "Test", frequency: .daily)
+        context.insert(habit)
+        context.insert(HabitLog(date: Date(), isCompleted: true, habit: habit))
+        XCTAssertTrue(habit.isCompletedToday)
+    }
+
+    func test_isCompletedToday_false_whenNoLog() throws {
+        let habit = Habit(name: "Test", frequency: .daily)
+        context.insert(habit)
+        XCTAssertFalse(habit.isCompletedToday)
+    }
+}
