@@ -5,20 +5,19 @@ import SwiftData
 struct LastAppApp: App {
     @State private var appState = AppState()
 
+    let container: ModelContainer = {
+        let schema = Schema([TaskItem.self, TaskList.self, Habit.self, HabitLog.self, FeatureConfig.self, FeatureLink.self])
+        let container = try! ModelContainer(for: schema)
+        return container
+    }()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(appState)
-                .task { await seedFeaturesIfNeeded() }
+                .task { seedFeaturesIfNeeded() }
         }
-        .modelContainer(for: [
-            TaskItem.self,
-            TaskList.self,
-            Habit.self,
-            HabitLog.self,
-            FeatureConfig.self,
-            FeatureLink.self,
-        ])
+        .modelContainer(container)
     }
 
     init() {
@@ -27,8 +26,7 @@ struct LastAppApp: App {
     }
 
     @MainActor
-    private func seedFeaturesIfNeeded() async {
-        guard let container = try? ModelContainer(for: FeatureConfig.self) else { return }
+    private func seedFeaturesIfNeeded() {
         let context = container.mainContext
         let descriptor = FetchDescriptor<FeatureConfig>()
         let existing = (try? context.fetch(descriptor)) ?? []
