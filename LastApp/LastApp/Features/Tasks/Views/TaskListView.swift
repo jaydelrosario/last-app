@@ -131,5 +131,3 @@ struct TaskListView: View {
     }
 }
 
-// Stub for view implemented in later task
-struct TaskDetailView: View { let task: TaskItem; var body: some View { Text(task.title) } }
