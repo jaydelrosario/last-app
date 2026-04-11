@@ -60,23 +60,6 @@ struct ContentView: View {
 }
 
 // MARK: - Stubs (removed as real views are implemented in later tasks)
-struct TaskListView: View {
-    @Environment(AppState.self) private var appState
-    var body: some View {
-        Text(navigationTitle)
-            .navigationTitle(navigationTitle)
-    }
-    private var navigationTitle: String {
-        switch appState.selectedDestination {
-        case .inbox: "Inbox"
-        case .today: "Today"
-        case .upcoming: "Upcoming"
-        case .completed: "Completed"
-        case .list: "List"
-        default: ""
-        }
-    }
-}
 struct TodayView: View { var body: some View { Text("Today").navigationTitle("Today") } }
 struct HabitListView: View { var body: some View { Text("Habits").navigationTitle("Habits") } }
 struct SettingsView: View { var body: some View { Text("Settings").navigationTitle("Settings") } }
