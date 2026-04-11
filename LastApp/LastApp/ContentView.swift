@@ -24,6 +24,18 @@ struct ContentView: View {
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: appState.isSidebarOpen)
+        .gesture(
+            DragGesture(minimumDistance: 20, coordinateSpace: .global)
+                .onEnded { value in
+                    let startX = value.startLocation.x
+                    let translation = value.translation.width
+                    if startX < 44 && translation > 60 {
+                        appState.isSidebarOpen = true
+                    } else if translation < -60 && appState.isSidebarOpen {
+                        appState.isSidebarOpen = false
+                    }
+                }
+        )
     }
 
     @ViewBuilder
