@@ -74,6 +74,3 @@ struct HabitListView: View {
     }
 }
 
-// Stubs for views implemented in later tasks
-struct HabitCreationView: View { var body: some View { Text("Create Habit") } }
-struct HabitDetailView: View { let habit: Habit; var body: some View { Text(habit.name) } }
