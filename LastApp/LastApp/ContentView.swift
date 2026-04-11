@@ -59,8 +59,6 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Stubs (removed as real views are implemented in later tasks)
-struct SettingsView: View { var body: some View { Text("Settings").navigationTitle("Settings") } }
 
 #Preview {
     ContentView()

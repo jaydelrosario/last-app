@@ -7,7 +7,17 @@ enum TasksFeature {
         displayName: "Tasks",
         icon: "checkmark.circle",
         isAlwaysOn: true,
-        makeSidebarRow: { _, _ in AnyView(EmptyView()) },
-        makeRootView: { _ in AnyView(EmptyView()) }
+        makeSidebarRow: { isSelected, onSelect in
+            AnyView(
+                Button(action: onSelect) {
+                    Label("Tasks", systemImage: "checkmark.circle")
+                        .foregroundStyle(isSelected ? Color.appAccent : .primary)
+                }
+                .buttonStyle(.plain)
+            )
+        },
+        makeRootView: { _ in
+            AnyView(TaskListView())
+        }
     )
 }

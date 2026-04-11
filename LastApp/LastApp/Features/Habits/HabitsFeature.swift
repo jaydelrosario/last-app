@@ -7,7 +7,17 @@ enum HabitsFeature {
         displayName: "Habits",
         icon: "flame",
         isAlwaysOn: false,
-        makeSidebarRow: { _, _ in AnyView(EmptyView()) },
-        makeRootView: { _ in AnyView(EmptyView()) }
+        makeSidebarRow: { isSelected, onSelect in
+            AnyView(
+                Button(action: onSelect) {
+                    Label("Habits", systemImage: "flame")
+                        .foregroundStyle(isSelected ? Color.appAccent : .primary)
+                }
+                .buttonStyle(.plain)
+            )
+        },
+        makeRootView: { _ in
+            AnyView(HabitListView())
+        }
     )
 }
