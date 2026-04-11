@@ -167,7 +167,7 @@ struct TaskDetailView: View {
                     .buttonStyle(.plain)
 
                     Text(subtask.title)
-                        .strikethrough(subtask.isCompleted, color: Color(uiColor: .tertiaryLabel))
+                        .strikethrough(subtask.isCompleted)
                         .foregroundStyle(subtask.isCompleted ? .tertiary : .primary)
                 }
                 .padding(.horizontal, AppTheme.padding)

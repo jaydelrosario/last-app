@@ -31,7 +31,7 @@ struct TaskRowView: View {
                 Text(task.title)
                     .font(.system(.body))
                     .foregroundStyle(task.isCompleted ? .tertiary : .primary)
-                    .strikethrough(task.isCompleted, color: Color(uiColor: .tertiaryLabel))
+                    .strikethrough(task.isCompleted)
                     .lineLimit(2)
 
                 if let due = task.dueDate, !task.isCompleted {
