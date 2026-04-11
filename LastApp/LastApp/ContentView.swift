@@ -1,24 +1,15 @@
-//
-//  ContentView.swift
-//  LastApp
-//
-//  Created by Jay on 4/11/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(AppState.self) private var appState
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        Text("LastApp — scaffold")
+            .padding()
     }
 }
 
 #Preview {
     ContentView()
+        .environment(AppState())
 }
