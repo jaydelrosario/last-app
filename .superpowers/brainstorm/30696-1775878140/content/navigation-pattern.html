@@ -1,0 +1,127 @@
+<h2>Navigation Pattern</h2>
+<p class="subtitle">The spec mentions a "sidebar" — on iPhone, what form should that take?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="sidebar-drawer" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0a0a;padding:16px;font-family:system-ui;border-radius:8px;overflow:hidden">
+      <div style="display:flex;height:260px;gap:0">
+        <div style="width:220px;background:#141414;border-right:1px solid #2a2a2a;padding:16px;flex-shrink:0;transform:translateX(0);transition:transform 0.3s">
+          <div style="font-size:11px;color:#888;letter-spacing:1px;margin-bottom:16px">LISTS</div>
+          <div style="color:#fff;padding:8px 10px;border-radius:6px;background:#1e1e1e;margin-bottom:6px;font-size:13px">📥 Inbox</div>
+          <div style="color:#fff;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:13px">☀️ Today</div>
+          <div style="color:#888;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:13px">📅 Upcoming</div>
+          <div style="color:#888;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:13px">✅ Completed</div>
+          <div style="font-size:11px;color:#888;letter-spacing:1px;margin:16px 0 8px">FEATURES</div>
+          <div style="color:#888;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:13px">🔥 Habits</div>
+        </div>
+        <div style="flex:1;background:#0a0a0a;padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div style="width:20px;height:14px;display:flex;flex-direction:column;gap:4px">
+              <div style="height:2px;background:#fff;border-radius:1px"></div>
+              <div style="height:2px;background:#fff;border-radius:1px"></div>
+              <div style="height:2px;background:#fff;border-radius:1px"></div>
+            </div>
+            <div style="color:#fff;font-size:14px;font-weight:600">Inbox</div>
+            <div style="width:20px;height:20px;background:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff">+</div>
+          </div>
+          <div style="background:#141414;border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="color:#fff;font-size:13px">Buy groceries</div>
+            <div style="color:#555;font-size:11px;margin-top:4px">Today · High</div>
+          </div>
+          <div style="background:#141414;border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="color:#fff;font-size:13px">Review PR feedback</div>
+            <div style="color:#555;font-size:11px;margin-top:4px">Tomorrow</div>
+          </div>
+          <div style="background:#141414;border-radius:8px;padding:12px">
+            <div style="color:#fff;font-size:13px">Plan weekend</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Sliding Sidebar Drawer</h3>
+      <p>Hamburger icon slides in the full sidebar over the content. TickTick's exact iPhone pattern. Full screen real estate when collapsed; all lists/features accessible with one tap.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="tab-bar" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0a0a;padding:16px;font-family:system-ui;border-radius:8px;overflow:hidden">
+      <div style="height:260px;position:relative">
+        <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e1e1e">
+          <div style="color:#888;font-size:13px">Lists</div>
+          <div style="color:#fff;font-size:14px;font-weight:600">Today</div>
+          <div style="width:20px;height:20px;background:#3b82f6;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff">+</div>
+        </div>
+        <div style="padding:12px 16px">
+          <div style="background:#141414;border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="color:#fff;font-size:13px">Buy groceries</div>
+            <div style="color:#555;font-size:11px;margin-top:4px">Today · High</div>
+          </div>
+          <div style="background:#141414;border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="color:#fff;font-size:13px">Review PR feedback</div>
+          </div>
+          <div style="background:#141414;border-radius:8px;padding:12px">
+            <div style="color:#fff;font-size:13px">Plan weekend</div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:#111;border-top:1px solid #2a2a2a;display:flex;justify-content:space-around;padding:10px 0">
+          <div style="text-align:center">
+            <div style="font-size:18px">📥</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">Tasks</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px">☀️</div>
+            <div style="font-size:10px;color:#3b82f6;margin-top:2px">Today</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px">🔥</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">Habits</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px">⚙️</div>
+            <div style="font-size:10px;color:#888;margin-top:2px">Settings</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Tab Bar</h3>
+      <p>Fixed tabs at the bottom. Common iOS pattern. Instant switching between sections, always visible. But tabs are fixed — adding a new feature module means adding a tab (limited to ~5).</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="split-view" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0a0a0a;padding:16px;font-family:system-ui;border-radius:8px;overflow:hidden">
+      <div style="display:flex;height:260px;gap:0">
+        <div style="width:130px;background:#141414;padding:12px;flex-shrink:0">
+          <div style="font-size:10px;color:#666;letter-spacing:1px;margin-bottom:12px">LISTS</div>
+          <div style="color:#fff;padding:6px 8px;border-radius:5px;background:#1e1e1e;margin-bottom:4px;font-size:11px">📥 Inbox</div>
+          <div style="color:#fff;padding:6px 8px;border-radius:5px;margin-bottom:4px;font-size:11px">☀️ Today</div>
+          <div style="color:#888;padding:6px 8px;margin-bottom:4px;font-size:11px">📅 Upcoming</div>
+          <div style="color:#888;padding:6px 8px;margin-bottom:4px;font-size:11px">✅ Done</div>
+          <div style="font-size:10px;color:#666;letter-spacing:1px;margin:12px 0 8px">FEATURES</div>
+          <div style="color:#888;padding:6px 8px;margin-bottom:4px;font-size:11px">🔥 Habits</div>
+        </div>
+        <div style="flex:1;background:#0a0a0a;padding:12px;border-left:1px solid #1e1e1e">
+          <div style="color:#fff;font-size:13px;font-weight:600;margin-bottom:12px">Inbox</div>
+          <div style="background:#141414;border-radius:6px;padding:10px;margin-bottom:6px">
+            <div style="color:#fff;font-size:12px">Buy groceries</div>
+            <div style="color:#555;font-size:10px;margin-top:3px">Today</div>
+          </div>
+          <div style="background:#141414;border-radius:6px;padding:10px;margin-bottom:6px">
+            <div style="color:#fff;font-size:12px">Review PR</div>
+          </div>
+          <div style="background:#141414;border-radius:6px;padding:10px">
+            <div style="color:#fff;font-size:12px">Plan weekend</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Persistent Sidebar (iPad-style)</h3>
+      <p>Sidebar always visible alongside content. Uses SwiftUI's NavigationSplitView — adapts to sidebar drawer on iPhone automatically, persistent on iPad/landscape. Future-proofs for iPad support.</p>
+    </div>
+  </div>
+
+</div>
