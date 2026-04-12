@@ -123,6 +123,7 @@ struct SidebarView: View {
         switch key {
         case .tasks: .inbox
         case .habits: .habits
+        case .workout: .workout
         }
     }
 }

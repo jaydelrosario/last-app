@@ -101,6 +101,8 @@ struct ContentView: View {
             TodayView()
         case .habits:
             HabitListView()
+        case .workout:
+            WorkoutListView()
         case .settings:
             SettingsView()
         }

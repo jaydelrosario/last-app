@@ -8,5 +8,6 @@ enum SidebarDestination: Hashable {
     case completed
     case list(UUID)
     case habits
+    case workout
     case settings
 }
