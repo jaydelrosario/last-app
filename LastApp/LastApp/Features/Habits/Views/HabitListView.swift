@@ -9,6 +9,7 @@ struct HabitListView: View {
     @State private var showingCreation = false
     @State private var showingStackCreation = false
     @State private var editingStack: HabitStack?
+    @State private var selectedHabit: Habit?
 
     private var viewModel: HabitViewModel {
         HabitViewModel(context: modelContext)
@@ -16,6 +17,8 @@ struct HabitListView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+
             Group {
                 if habits.isEmpty && stacks.isEmpty {
                     emptyState
@@ -26,15 +29,10 @@ struct HabitListView: View {
 
             // FAB — menu with New Habit / New Stack
             Menu {
-                Button {
-                    showingCreation = true
-                } label: {
+                Button { showingCreation = true } label: {
                     Label("New Habit", systemImage: "flame")
                 }
-
-                Button {
-                    showingStackCreation = true
-                } label: {
+                Button { showingStackCreation = true } label: {
                     Label("New Habit Stack", systemImage: "square.stack")
                 }
             } label: {
@@ -50,68 +48,113 @@ struct HabitListView: View {
         }
         .navigationTitle("Habits")
         .navigationBarTitleDisplayMode(.large)
-        .sheet(isPresented: $showingCreation) {
-            HabitCreationView()
-        }
-        .sheet(isPresented: $showingStackCreation) {
-            HabitStackView()
-        }
-        .sheet(item: $editingStack) { stack in
-            HabitStackView(existingStack: stack)
-        }
-    }
-
-    private var habitList: some View {
-        List {
-            // Individual habits
-            if !habits.isEmpty {
-                Section {
-                    ForEach(habits) { habit in
-                        NavigationLink(value: habit) {
-                            HabitRowView(habit: habit) {
-                                withAnimation { viewModel.toggleToday(habit) }
-                            }
-                        }
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                    }
-                    .onDelete { offsets in
-                        offsets.map { habits[$0] }.forEach { viewModel.delete($0) }
-                    }
-                } header: {
-                    Text("HABITS")
-                        .font(.system(.caption2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .listSectionSeparator(.hidden)
-            }
-
-            // Habit stacks
-            if !stacks.isEmpty {
-                Section {
-                    ForEach(stacks) { stack in
-                        HabitStackRowView(stack: stack) {
-                            editingStack = stack
-                        }
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                    }
-                    .onDelete { offsets in
-                        offsets.map { stacks[$0] }.forEach { modelContext.delete($0) }
-                    }
-                } header: {
-                    Text("STACKS")
-                        .font(.system(.caption2, design: .rounded, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .listSectionSeparator(.hidden)
-            }
-        }
-        .listStyle(.plain)
-        .navigationDestination(for: Habit.self) { habit in
+        .sheet(isPresented: $showingCreation) { HabitCreationView() }
+        .sheet(isPresented: $showingStackCreation) { HabitStackView() }
+        .sheet(item: $editingStack) { stack in HabitStackView(existingStack: stack) }
+        .navigationDestination(item: $selectedHabit) { habit in
             HabitDetailView(habit: habit)
         }
     }
+
+    // MARK: - Week strip
+
+    private var weekStrip: some View {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let weekday = calendar.component(.weekday, from: today)
+        let startOfWeek = calendar.date(byAdding: .day, value: -(weekday - 1), to: today)!
+        let days = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: startOfWeek) }
+        let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+        return HStack(spacing: 0) {
+            ForEach(Array(days.enumerated()), id: \.offset) { i, day in
+                let isToday = calendar.isDate(day, inSameDayAs: today)
+                let dayNum = calendar.component(.day, from: day)
+                VStack(spacing: 4) {
+                    Text(dayNames[i])
+                        .font(.system(.caption2, weight: .medium))
+                        .foregroundStyle(isToday ? .primary : .tertiary)
+                    ZStack {
+                        if isToday {
+                            Circle()
+                                .fill(Color.primary)
+                                .frame(width: 28, height: 28)
+                        }
+                        Text("\(dayNum)")
+                            .font(.system(.subheadline, weight: isToday ? .bold : .regular))
+                            .foregroundStyle(isToday ? Color(uiColor: .systemBackground) : .secondary)
+                    }
+                    .frame(width: 28, height: 28)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, AppTheme.padding)
+        .padding(.vertical, 10)
+        .background(Color(uiColor: .systemBackground))
+    }
+
+    // MARK: - Habit list
+
+    private var habitList: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                weekStrip
+
+                if !habits.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("HABITS")
+                            .font(.system(.caption2, design: .rounded, weight: .semibold))
+                            .foregroundStyle(.tertiary)
+                            .padding(.horizontal, AppTheme.padding)
+
+                        ForEach(habits) { habit in
+                            HabitRowView(habit: habit) {
+                                withAnimation { viewModel.toggleToday(habit) }
+                            }
+                            .padding(.horizontal, AppTheme.padding)
+                            .onTapGesture { selectedHabit = habit }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    viewModel.delete(habit)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if !stacks.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("STACKS")
+                            .font(.system(.caption2, design: .rounded, weight: .semibold))
+                            .foregroundStyle(.tertiary)
+                            .padding(.horizontal, AppTheme.padding)
+
+                        ForEach(stacks) { stack in
+                            HabitStackRowView(stack: stack) {
+                                editingStack = stack
+                            }
+                            .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: 20))
+                            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+                            .padding(.horizontal, AppTheme.padding)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    modelContext.delete(stack)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.bottom, 90)
+        }
+    }
+
+    // MARK: - Empty state
 
     private var emptyState: some View {
         VStack(spacing: 12) {
