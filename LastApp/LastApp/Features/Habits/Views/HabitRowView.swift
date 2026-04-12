@@ -28,10 +28,11 @@ struct HabitRowView: View {
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(habit.name)
+                Text(habit.displayName)
                     .font(.system(.body))
                     .foregroundStyle(habit.isCompletedToday ? .secondary : .primary)
-                Text(habit.frequency.rawValue)
+
+                Text(habit.scheduleText.isEmpty ? habit.frequency.rawValue : habit.scheduleText)
                     .font(.system(.caption2, weight: .medium))
                     .foregroundStyle(.tertiary)
             }
