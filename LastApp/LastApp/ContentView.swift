@@ -3,20 +3,21 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(AppState.self) private var appState
-    @GestureState private var dragOffset: CGFloat = 0
+    @GestureState private var openDrag: CGFloat = 0
+    @GestureState private var closeDrag: CGFloat = 0
 
     private let sidebarWidth: CGFloat = AppTheme.sidebarWidth
 
-    private var currentOffset: CGFloat {
+    private var offset: CGFloat {
         if appState.isSidebarOpen {
-            return min(0, dragOffset)
+            return min(0, closeDrag)
         } else {
-            return max(-sidebarWidth, -sidebarWidth + max(0, dragOffset))
+            return max(-sidebarWidth, -sidebarWidth + max(0, openDrag))
         }
     }
 
     private var progress: CGFloat {
-        (sidebarWidth + currentOffset) / sidebarWidth
+        (sidebarWidth + offset) / sidebarWidth
     }
 
     var body: some View {
@@ -24,41 +25,53 @@ struct ContentView: View {
             mainContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
+            // Dimming overlay — tap or swipe left to close
             Color.black.opacity(0.35 * progress)
                 .ignoresSafeArea()
                 .allowsHitTesting(progress > 0.01)
-                .onTapGesture {
-                    appState.isSidebarOpen = false
-                }
+                .onTapGesture { appState.isSidebarOpen = false }
 
+            // Sidebar — drag left on it to close
             SidebarView()
                 .ignoresSafeArea()
-                .offset(x: currentOffset)
+                .offset(x: offset)
                 .shadow(color: .black.opacity(0.2 * progress), radius: 20, x: 8, y: 0)
+                .gesture(
+                    DragGesture(minimumDistance: 10)
+                        .updating($closeDrag) { value, state, _ in
+                            guard value.translation.width < 0 else { return }
+                            state = value.translation.width
+                        }
+                        .onEnded { value in
+                            if value.translation.width < -(sidebarWidth * 0.3) ||
+                               value.predictedEndTranslation.width < -(sidebarWidth * 0.5) {
+                                appState.isSidebarOpen = false
+                            }
+                        }
+                )
+
+            // Left-edge hot zone — drag right from here to open
+            if !appState.isSidebarOpen {
+                Color.clear
+                    .frame(width: 30)
+                    .contentShape(Rectangle())
+                    .ignoresSafeArea()
+                    .gesture(
+                        DragGesture(minimumDistance: 10)
+                            .updating($openDrag) { value, state, _ in
+                                guard value.translation.width > 0 else { return }
+                                state = value.translation.width
+                            }
+                            .onEnded { value in
+                                if value.translation.width > sidebarWidth * 0.3 ||
+                                   value.predictedEndTranslation.width > sidebarWidth * 0.5 {
+                                    appState.isSidebarOpen = true
+                                }
+                            }
+                    )
+            }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: appState.isSidebarOpen)
-        .gesture(
-            DragGesture(minimumDistance: 20, coordinateSpace: .global)
-                .updating($dragOffset) { value, state, _ in
-                    let openingFromEdge = !appState.isSidebarOpen && value.startLocation.x < 44
-                    guard openingFromEdge || appState.isSidebarOpen else { return }
-                    state = value.translation.width
-                }
-                .onEnded { value in
-                    let translation = value.translation.width
-                    let velocity = value.predictedEndTranslation.width
-                    if !appState.isSidebarOpen {
-                        guard value.startLocation.x < 44 else { return }
-                        if translation > sidebarWidth * 0.3 || velocity > sidebarWidth {
-                            appState.isSidebarOpen = true
-                        }
-                    } else {
-                        if translation < -(sidebarWidth * 0.3) || velocity < -(sidebarWidth * 0.5) {
-                            appState.isSidebarOpen = false
-                        }
-                    }
-                }
-        )
     }
 
     @ViewBuilder
