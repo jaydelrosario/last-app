@@ -22,7 +22,3 @@ enum WorkoutFeature {
     )
 }
 
-// TEMPORARY — will be replaced in Task 6
-struct WorkoutListView: View {
-    var body: some View { Text("Workout Coming Soon") }
-}
