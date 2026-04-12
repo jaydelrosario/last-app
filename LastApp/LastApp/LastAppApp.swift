@@ -6,7 +6,7 @@ struct LastAppApp: App {
     @State private var appState = AppState()
 
     let container: ModelContainer = {
-        let schema = Schema([TaskItem.self, TaskList.self, Habit.self, HabitLog.self, FeatureConfig.self, FeatureLink.self])
+        let schema = Schema([TaskItem.self, TaskList.self, Habit.self, HabitLog.self, FeatureConfig.self, FeatureLink.self, HabitStack.self, HabitStackEntry.self])
         let container = try! ModelContainer(for: schema)
         return container
     }()

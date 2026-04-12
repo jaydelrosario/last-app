@@ -1,6 +1,6 @@
 // LastApp/Features/Habits/Models/Habit.swift
 import SwiftData
-import Foundation
+import SwiftUI
 
 @Model
 final class Habit {
@@ -54,6 +54,13 @@ final class Habit {
 
     /// Display in list rows
     var displayName: String { action.isEmpty ? name : action }
+
+    /// Deterministic accent color from id — used in habit stack dots
+    var accentColor: Color {
+        let palette: [Color] = [.orange, .green, .blue, .purple, .red, .yellow, .mint, .cyan, .pink, .teal]
+        let index = Int(id.uuidString.prefix(2), radix: 16) ?? 0
+        return palette[index % palette.count]
+    }
 
     // MARK: - Streak
 
