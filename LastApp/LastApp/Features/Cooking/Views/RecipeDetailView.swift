@@ -178,7 +178,8 @@ struct RecipeDetailView: View {
     // MARK: - Helpers
 
     private func formatAmount(_ value: Double) -> String {
-        if value == value.rounded() { return String(Int(value.rounded())) }
-        return String(format: "%.1f", value)
+        let v = abs(value)
+        if v == v.rounded() { return String(Int(v.rounded())) }
+        return String(format: "%.1f", v)
     }
 }
