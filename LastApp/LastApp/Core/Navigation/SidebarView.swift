@@ -4,9 +4,13 @@ import SwiftData
 
 struct SidebarView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \TaskList.sortOrder) private var customLists: [TaskList]
     @Query(filter: #Predicate<FeatureConfig> { $0.isEnabled }, sort: \FeatureConfig.sortOrder)
     private var enabledFeatures: [FeatureConfig]
+
+    @State private var showingAddList = false
+    @State private var editingList: TaskList?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -14,10 +18,7 @@ struct SidebarView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
                     smartListsSection
-                    if !customLists.isEmpty {
-                        sectionLabel("LISTS")
-                        customListsSection
-                    }
+                    listsSection
                     enabledFeaturesSection
                 }
                 .padding(.horizontal, 12)
@@ -28,6 +29,8 @@ struct SidebarView: View {
         }
         .frame(width: AppTheme.sidebarWidth)
         .background(.regularMaterial)
+        .sheet(isPresented: $showingAddList) { AddListView() }
+        .sheet(item: $editingList) { AddListView(existingList: $0) }
     }
 
     // MARK: - Sections
@@ -49,9 +52,45 @@ struct SidebarView: View {
         }
     }
 
-    private var customListsSection: some View {
-        ForEach(customLists) { list in
-            sidebarRow(icon: list.icon, label: list.name, destination: .list(list.id))
+    private var listsSection: some View {
+        Group {
+            HStack {
+                Text("LISTS")
+                    .font(.system(.caption2, design: .rounded, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                Spacer()
+                Button { showingAddList = true } label: {
+                    Image(systemName: "plus")
+                        .font(.system(.caption, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 28, height: 28)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 16)
+            .padding(.bottom, 4)
+
+            ForEach(customLists) { list in
+                sidebarRow(
+                    icon: list.icon,
+                    label: list.name,
+                    destination: .list(list.id),
+                    tintColor: list.colorHex.isEmpty ? nil : Color(hex: list.colorHex)
+                )
+                .contextMenu {
+                    Button { editingList = list } label: {
+                        Label("Edit List", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        modelContext.delete(list)
+                        try? modelContext.save()
+                    } label: {
+                        Label("Delete List", systemImage: "trash")
+                    }
+                }
+            }
         }
     }
 
@@ -86,8 +125,9 @@ struct SidebarView: View {
 
     // MARK: - Helpers
 
-    private func sidebarRow(icon: String, label: String, destination: SidebarDestination) -> some View {
+    private func sidebarRow(icon: String, label: String, destination: SidebarDestination, tintColor: Color? = nil) -> some View {
         let isSelected = appState.selectedDestination == destination
+        let iconColor: Color = tintColor ?? (isSelected ? Color.appAccent : .primary)
         return Button {
             appState.navigate(to: destination)
         } label: {
@@ -95,7 +135,7 @@ struct SidebarView: View {
                 Image(systemName: icon)
                     .font(.system(.body, weight: .medium))
                     .frame(width: 22, alignment: .center)
-                    .foregroundStyle(isSelected ? Color.appAccent : .primary)
+                    .foregroundStyle(iconColor)
                 Text(label)
                     .font(.system(.body))
                     .foregroundStyle(isSelected ? Color.appAccent : .primary)

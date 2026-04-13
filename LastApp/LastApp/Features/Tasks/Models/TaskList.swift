@@ -12,7 +12,9 @@ final class TaskList {
 
     @Relationship(deleteRule: .cascade, inverse: \TaskItem.list) var tasks: [TaskItem] = []
 
-    init(name: String, icon: String = "list.bullet", colorHex: String = "14b8a6") {
+    var viewType: String = "list"
+
+    init(name: String, icon: String = "list.bullet", colorHex: String = "") {
         self.name = name
         self.icon = icon
         self.colorHex = colorHex
