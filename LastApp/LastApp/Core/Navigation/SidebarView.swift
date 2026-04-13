@@ -72,7 +72,7 @@ struct SidebarView: View {
             HStack {
                 Text("LISTS")
                     .font(.system(.caption2, design: .rounded, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(.secondary)
                 Spacer()
                 Menu {
                     Button { showingAddList = true } label: {
@@ -82,9 +82,9 @@ struct SidebarView: View {
                         Label("New Folder", systemImage: "folder")
                     }
                 } label: {
-                    Image(systemName: "plus")
-                        .font(.system(.caption, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(.body))
+                        .foregroundStyle(Color.appAccent)
                         .frame(width: 28, height: 28)
                         .contentShape(Rectangle())
                 }
@@ -102,6 +102,18 @@ struct SidebarView: View {
             // Top-level lists (no folder)
             ForEach(rootLists) { list in
                 listRow(list, indented: false)
+            }
+
+            // Empty state hint
+            if folders.isEmpty && rootLists.isEmpty {
+                Button { showingAddList = true } label: {
+                    Label("Add a list", systemImage: "plus")
+                        .font(.system(.subheadline))
+                        .foregroundStyle(Color.appAccent.opacity(0.8))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
