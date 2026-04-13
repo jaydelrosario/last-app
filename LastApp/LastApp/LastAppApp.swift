@@ -27,7 +27,7 @@ struct LastAppApp: App {
                 .task {
                     seedFeaturesIfNeeded()
                     seedExercisesIfNeeded()
-                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+                    try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
                 }
         }
         .modelContainer(container)
