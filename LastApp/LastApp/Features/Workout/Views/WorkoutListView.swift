@@ -5,11 +5,17 @@ import SwiftData
 struct WorkoutListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Routine.createdAt) private var routines: [Routine]
+    @Query(sort: \WorkoutSession.startedAt, order: .reverse) private var allSessions: [WorkoutSession]
 
     @State private var showingRoutineBuilder = false
     @State private var editingRoutine: Routine? = nil
     @State private var activeSession: WorkoutSession? = nil
     @State private var showingActiveWorkout = false
+    @State private var selectedSession: WorkoutSession? = nil
+
+    private var completedSessions: [WorkoutSession] {
+        allSessions.filter { $0.finishedAt != nil }
+    }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -71,11 +77,37 @@ struct WorkoutListView: View {
                         }
                     }
                 }
+
+                // History section
+                if !completedSessions.isEmpty {
+                    HStack {
+                        Text("History")
+                            .font(.system(.title3, weight: .bold))
+                        Spacer()
+                    }
+                    .padding(.horizontal, AppTheme.padding)
+
+                    VStack(spacing: 10) {
+                        ForEach(completedSessions) { session in
+                            Button {
+                                selectedSession = session
+                            } label: {
+                                sessionHistoryRow(session)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, AppTheme.padding)
+                        }
+                    }
+                }
+
                 .padding(.bottom, 40)
             }
         }
         .navigationTitle("Workout")
         .navigationBarTitleDisplayMode(.large)
+        .navigationDestination(item: $selectedSession) { session in
+            WorkoutSessionDetailView(session: session)
+        }
         .sheet(isPresented: $showingRoutineBuilder) {
             RoutineBuilderView()
         }
@@ -137,6 +169,55 @@ struct WorkoutListView: View {
         .padding(16)
         .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+    }
+
+    // MARK: - Session History Row
+
+    private func sessionHistoryRow(_ session: WorkoutSession) -> some View {
+        let exerciseNames = session.orderedExercises.prefix(3).compactMap { $0.exercise?.name }.joined(separator: ", ")
+        let completedSets = session.orderedExercises.flatMap { $0.orderedSets.filter { $0.isCompleted } }
+        let volume = completedSets.reduce(0.0) { $0 + $1.weightLbs * Double($1.reps) }
+        let duration: String = {
+            guard let finished = session.finishedAt else { return "" }
+            let secs = Int(finished.timeIntervalSince(session.startedAt))
+            let m = secs / 60
+            return m > 0 ? "\(m)m" : "\(secs)s"
+        }()
+
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(session.startedAt.formatted(date: .abbreviated, time: .omitted))
+                    .font(.system(.subheadline, weight: .semibold))
+                if !exerciseNames.isEmpty {
+                    Text(exerciseNames)
+                        .font(.system(.caption))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 4) {
+                if !duration.isEmpty {
+                    Text(duration)
+                        .font(.system(.subheadline, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+                if volume > 0 {
+                    Text("\(Int(volume)) lbs")
+                        .font(.system(.caption))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.system(.caption, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(14)
+        .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
     }
 
     // MARK: - Session creation
