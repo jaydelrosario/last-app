@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 @main
 struct LastAppApp: App {
@@ -25,6 +26,7 @@ struct LastAppApp: App {
                 .task {
                     seedFeaturesIfNeeded()
                     seedExercisesIfNeeded()
+                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
                 }
         }
         .modelContainer(container)

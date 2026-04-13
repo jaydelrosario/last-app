@@ -13,7 +13,12 @@ struct TaskCreationView: View {
     @State private var priority: Priority = .p4
     @State private var selectedList: TaskList? = nil
     @State private var isExpanded = false
+    @State private var showingDatePicker = false
     @FocusState private var titleFocused: Bool
+
+    init(initialDueDate: Date? = nil) {
+        _dueDate = State(initialValue: initialDueDate)
+    }
 
     var body: some View {
         NavigationStack {
@@ -34,6 +39,7 @@ struct TaskCreationView: View {
                         dateChip("Today", date: .now)
                         dateChip("Tomorrow", date: .tomorrow)
                         dateChip("Next Week", date: .nextWeek)
+                        customDateChip
 
                         Divider().frame(height: 20)
 
@@ -101,6 +107,35 @@ struct TaskCreationView: View {
                 .padding(.horizontal, AppTheme.padding)
                 .padding(.vertical, 10)
             }
+        }
+    }
+
+    private var customDateChip: some View {
+        let isCustom = dueDate.map { d in
+            !Calendar.current.isDateInToday(d) &&
+            !Calendar.current.isDate(d, inSameDayAs: .tomorrow) &&
+            !Calendar.current.isDate(d, inSameDayAs: .nextWeek)
+        } ?? false
+
+        return Button {
+            showingDatePicker.toggle()
+        } label: {
+            Text(isCustom ? dueDate!.formatted(.dateTime.month(.abbreviated).day()) : "Pick date")
+                .font(.system(.caption, weight: .medium))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Capsule().fill(isCustom ? Color.appAccent : Color.secondary.opacity(0.15)))
+                .foregroundStyle(isCustom ? .white : .primary)
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: $showingDatePicker) {
+            DatePicker("", selection: Binding(
+                get: { dueDate ?? .now },
+                set: { dueDate = $0 }
+            ), displayedComponents: .date)
+            .datePickerStyle(.graphical)
+            .padding()
+            .presentationCompactAdaptation(.popover)
         }
     }
 

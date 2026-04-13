@@ -69,15 +69,53 @@ struct TaskListView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             Image(systemName: emptyStateIcon)
-                .font(.system(size: 48))
-                .foregroundStyle(.quaternary)
-            Text(emptyStateMessage)
-                .font(.system(.subheadline))
-                .foregroundStyle(.tertiary)
+                .font(.system(size: 52))
+                .foregroundStyle(Color.appAccent.opacity(0.25))
+            VStack(spacing: 6) {
+                Text(emptyStateMessage)
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text(emptyStateSubtitle)
+                    .font(.system(.subheadline))
+                    .foregroundStyle(.tertiary)
+                    .multilineTextAlignment(.center)
+            }
+            if showsAddButton {
+                Button {
+                    showingCreation = true
+                } label: {
+                    Text("Add Task")
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 10)
+                        .background(Color.appAccent, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
+            }
         }
+        .padding(.horizontal, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var emptyStateSubtitle: String {
+        switch appState.selectedDestination {
+        case .inbox: "Tasks without a due date or list live here"
+        case .today: "Tasks due today will appear here"
+        case .upcoming: "Future due dates will appear here"
+        case .completed: "Completed tasks from the last 30 days"
+        default: "No tasks in this list yet"
+        }
+    }
+
+    private var showsAddButton: Bool {
+        switch appState.selectedDestination {
+        case .inbox, .list: true
+        default: false
+        }
     }
 
     private var filteredTasks: [TaskItem] {

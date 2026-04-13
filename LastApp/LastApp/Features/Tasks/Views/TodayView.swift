@@ -38,7 +38,7 @@ struct TodayView: View {
         .navigationTitle("Today")
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showingTaskCreation) {
-            TaskCreationView()
+            TaskCreationView(initialDueDate: .now)
         }
     }
 

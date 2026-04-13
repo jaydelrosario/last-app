@@ -157,13 +157,33 @@ struct HabitListView: View {
     // MARK: - Empty state
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Text("🔥")
-                .font(.system(size: 48))
-            Text("Start your first habit")
-                .font(.system(.subheadline))
-                .foregroundStyle(.tertiary)
+        VStack(spacing: 16) {
+            Image(systemName: "flame")
+                .font(.system(size: 52))
+                .foregroundStyle(Color.orange.opacity(0.3))
+            VStack(spacing: 6) {
+                Text("No habits yet")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text("Build streaks by tracking daily actions")
+                    .font(.system(.subheadline))
+                    .foregroundStyle(.tertiary)
+                    .multilineTextAlignment(.center)
+            }
+            Button {
+                showingCreation = true
+            } label: {
+                Text("Add Habit")
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                    .background(Color.appAccent, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
         }
+        .padding(.horizontal, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

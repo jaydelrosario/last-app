@@ -35,6 +35,8 @@ struct HabitDetailView: View {
                 }
                 Divider().padding(.horizontal, AppTheme.padding)
                 statsSection
+                Divider().padding(.horizontal, AppTheme.padding)
+                completionHistorySection
                 Spacer(minLength: 32)
             }
             .padding(.top, AppTheme.padding)
@@ -286,6 +288,37 @@ struct HabitDetailView: View {
                 .foregroundStyle(.tertiary)
             Text(value)
                 .font(.system(.subheadline, weight: .semibold))
+        }
+    }
+
+    // MARK: - Completion History (30-day grid)
+
+    private var completionHistorySection: some View {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let days = (0..<30).reversed().map { calendar.date(byAdding: .day, value: -$0, to: today)! }
+        let completedDays = Set(habit.logs.filter { $0.isCompleted }.map { calendar.startOfDay(for: $0.date) })
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Last 30 days")
+                .font(.system(.body, weight: .semibold))
+                .padding(.horizontal, AppTheme.padding)
+
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
+                ForEach(days, id: \.self) { day in
+                    let completed = completedDays.contains(day)
+                    let isToday = calendar.isDate(day, inSameDayAs: today)
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(completed ? habit.accentColor : Color.secondary.opacity(0.12))
+                        .overlay(
+                            isToday && !completed
+                                ? RoundedRectangle(cornerRadius: 5).strokeBorder(habit.accentColor.opacity(0.5), lineWidth: 1.5)
+                                : nil
+                        )
+                        .aspectRatio(1, contentMode: .fit)
+                }
+            }
+            .padding(.horizontal, AppTheme.padding)
         }
     }
 
