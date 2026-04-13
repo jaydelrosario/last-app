@@ -31,6 +31,13 @@ struct RecipeListView: View {
         .searchable(text: $searchText, prompt: "Search recipes")
         .sheet(isPresented: $showingCreation) { RecipeCreationView() }
         .navigationDestination(item: $selectedRecipe) { RecipeDetailView(recipe: $0) }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink(destination: CollectionListView()) {
+                    Image(systemName: "folder")
+                }
+            }
+        }
     }
 
     // MARK: - Filtering
