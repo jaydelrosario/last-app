@@ -1,5 +1,6 @@
 // LastApp/Shared/Theme/AppTheme.swift
 import SwiftUI
+import UIKit
 
 // MARK: - App Colors
 extension Color {
@@ -21,5 +22,5 @@ enum AppTheme {
     static let padding: CGFloat = 16
     static let rowSpacing: CGFloat = 8
     static let cornerRadius: CGFloat = 10
-    static let sidebarWidth: CGFloat = 280
+    static var sidebarWidth: CGFloat { UIScreen.main.bounds.width - 56 }
 }
