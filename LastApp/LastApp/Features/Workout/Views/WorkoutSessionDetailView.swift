@@ -4,6 +4,15 @@ import SwiftUI
 struct WorkoutSessionDetailView: View {
     let session: WorkoutSession
 
+    @AppStorage("weightUnit") private var weightUnit: String = "lbs"
+
+    private func displayWeight(_ lbs: Double) -> String {
+        let val = weightUnit == "kg" ? lbs * 0.453592 : lbs
+        return weightUnit == "kg"
+            ? String(format: "%.1f kg", val)
+            : "\(Int(val)) lbs"
+    }
+
     private var duration: String {
         guard let finished = session.finishedAt else { return "—" }
         let secs = Int(finished.timeIntervalSince(session.startedAt))
@@ -39,6 +48,21 @@ struct WorkoutSessionDetailView: View {
                 .padding(.vertical, 12)
                 .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
                 .padding(.horizontal)
+
+                // Notes
+                if !session.notes.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("NOTES")
+                            .font(.system(.caption2, weight: .semibold))
+                            .foregroundStyle(.tertiary)
+                        Text(session.notes)
+                            .font(.system(.body))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
+                }
 
                 // Exercise sections
                 ForEach(session.orderedExercises) { se in
@@ -90,7 +114,7 @@ struct WorkoutSessionDetailView: View {
                     Text("\(set.setNumber)")
                         .font(.system(.body, weight: .semibold))
                         .frame(width: 36, alignment: .leading)
-                    Text("\(Int(set.weightLbs)) lbs × \(set.reps)")
+                    Text("\(displayWeight(set.weightLbs)) × \(set.reps)")
                         .font(.system(.body))
                     Spacer()
                 }

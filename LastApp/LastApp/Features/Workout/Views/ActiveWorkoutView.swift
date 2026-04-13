@@ -9,6 +9,7 @@ struct ActiveWorkoutView: View {
     let session: WorkoutSession
 
     @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
+    @AppStorage("weightUnit") private var weightUnit: String = "lbs"
 
     @State private var elapsedSeconds: Int = 0
     @State private var showingPicker = false
@@ -19,11 +20,23 @@ struct ActiveWorkoutView: View {
     @State private var restTimer: Timer? = nil
 
     @State private var exerciseForDetail: Exercise? = nil
+    @State private var notes: String = ""
+
+    private let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+    private let notificationFeedback = UINotificationFeedbackGenerator()
 
     private var hasLoggedSets: Bool {
-        session.sessionExercises.contains { ex in
-            ex.sets.contains { $0.isCompleted }
-        }
+        session.sessionExercises.contains { ex in ex.sets.contains { $0.isCompleted } }
+    }
+
+    // Convert stored lbs value for display
+    private func displayWeight(_ lbs: Double) -> Double {
+        weightUnit == "kg" ? lbs * 0.453592 : lbs
+    }
+
+    // Convert entered display value back to lbs for storage
+    private func storageWeight(_ display: Double) -> Double {
+        weightUnit == "kg" ? display / 0.453592 : display
     }
 
     var body: some View {
@@ -33,6 +46,20 @@ struct ActiveWorkoutView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         ForEach(session.orderedExercises) { sessionExercise in
                             exerciseSection(sessionExercise)
+                        }
+
+                        // Notes field
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("NOTES")
+                                .font(.system(.caption2, weight: .semibold))
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, AppTheme.padding)
+
+                            TextField("Add workout notes…", text: $notes, axis: .vertical)
+                                .font(.system(.body))
+                                .padding(12)
+                                .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
+                                .padding(.horizontal, AppTheme.padding)
                         }
 
                         Button {
@@ -53,7 +80,6 @@ struct ActiveWorkoutView: View {
                 }
                 .background(Color(uiColor: .systemGroupedBackground))
 
-                // Rest timer banner
                 if let remaining = restRemaining {
                     restTimerBanner(remaining: remaining)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -65,11 +91,7 @@ struct ActiveWorkoutView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        if hasLoggedSets {
-                            showingDiscardAlert = true
-                        } else {
-                            discardSession()
-                        }
+                        if hasLoggedSets { showingDiscardAlert = true } else { discardSession() }
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -81,7 +103,12 @@ struct ActiveWorkoutView: View {
                 ExerciseDetailView(exercise: exercise)
             }
         }
-        .onAppear { startWorkoutTimer() }
+        .onAppear {
+            startWorkoutTimer()
+            notes = session.notes
+            impactFeedback.prepare()
+            notificationFeedback.prepare()
+        }
         .onDisappear { stopAllTimers() }
         .sheet(isPresented: $showingPicker) {
             ExercisePickerView { exercise in addExercise(exercise) }
@@ -106,12 +133,8 @@ struct ActiveWorkoutView: View {
                     .font(.system(.title2, design: .monospaced, weight: .bold))
                     .foregroundStyle(remaining <= 10 ? .red : Color.appAccent)
             }
-
             Spacer()
-
-            Button {
-                stopRestTimer()
-            } label: {
+            Button { stopRestTimer() } label: {
                 Text("Skip")
                     .font(.system(.subheadline, weight: .semibold))
                     .padding(.horizontal, 16)
@@ -132,7 +155,6 @@ struct ActiveWorkoutView: View {
 
     private func exerciseSection(_ sessionExercise: SessionExercise) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Tappable exercise name → detail view
             Button {
                 exerciseForDetail = sessionExercise.exercise
             } label: {
@@ -150,7 +172,7 @@ struct ActiveWorkoutView: View {
 
             HStack {
                 Text("SET").frame(width: 36, alignment: .leading)
-                Text("LBS").frame(maxWidth: .infinity, alignment: .center)
+                Text(weightUnit.uppercased()).frame(maxWidth: .infinity, alignment: .center)
                 Text("REPS").frame(maxWidth: .infinity, alignment: .center)
                 Spacer().frame(width: 44)
             }
@@ -162,9 +184,7 @@ struct ActiveWorkoutView: View {
                 setRow(set)
             }
 
-            Button {
-                addSet(to: sessionExercise)
-            } label: {
+            Button { addSet(to: sessionExercise) } label: {
                 HStack {
                     Image(systemName: "plus")
                     Text("Add Set")
@@ -189,8 +209,8 @@ struct ActiveWorkoutView: View {
                 .frame(width: 36, alignment: .leading)
 
             TextField("0", value: Binding(
-                get: { set.weightLbs },
-                set: { set.weightLbs = $0 }
+                get: { displayWeight(set.weightLbs) },
+                set: { set.weightLbs = storageWeight($0) }
             ), format: .number)
             .keyboardType(.decimalPad)
             .multilineTextAlignment(.center)
@@ -213,6 +233,7 @@ struct ActiveWorkoutView: View {
                     set.isCompleted.toggle()
                 }
                 if set.isCompleted {
+                    impactFeedback.impactOccurred()
                     startRestTimer()
                 }
             } label: {
@@ -263,6 +284,7 @@ struct ActiveWorkoutView: View {
             if let r = restRemaining, r > 0 {
                 restRemaining = r - 1
             } else {
+                notificationFeedback.notificationOccurred(.success)
                 stopRestTimer()
             }
         }
@@ -306,6 +328,7 @@ struct ActiveWorkoutView: View {
     private func finishWorkout() {
         stopAllTimers()
         session.finishedAt = Date()
+        session.notes = notes
         try? modelContext.save()
         dismiss()
     }

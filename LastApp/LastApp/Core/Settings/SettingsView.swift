@@ -5,6 +5,7 @@ import SwiftData
 struct SettingsView: View {
     @Query(sort: \FeatureConfig.sortOrder) private var featureConfigs: [FeatureConfig]
     @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
+    @AppStorage("weightUnit") private var weightUnit: String = "lbs"
 
     private let restTimerOptions = [30, 60, 90, 120, 180, 300]
 
@@ -15,6 +16,10 @@ struct SettingsView: View {
                     ForEach(restTimerOptions, id: \.self) { seconds in
                         Text(restTimerLabel(seconds)).tag(seconds)
                     }
+                }
+                Picker("Weight Unit", selection: $weightUnit) {
+                    Text("lbs").tag("lbs")
+                    Text("kg").tag("kg")
                 }
             }
 

@@ -74,10 +74,12 @@ struct SidebarView: View {
             appState.navigate(to: .settings)
         } label: {
             Label("Settings", systemImage: "gearshape")
-                .font(.system(.subheadline))
+                .font(.system(.body, weight: .medium))
                 .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+                .padding(.vertical, 20)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
