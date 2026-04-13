@@ -25,32 +25,19 @@ struct ContentView: View {
             mainContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Dimming overlay — tap or swipe left to close
+            // Dimming overlay — tap to close
             Color.black.opacity(0.35 * progress)
                 .ignoresSafeArea()
                 .allowsHitTesting(progress > 0.01)
                 .onTapGesture { appState.isSidebarOpen = false }
 
-            // Sidebar — drag left on it to close
+            // Sidebar — no gesture here (ScrollView intercepts it)
             SidebarView()
                 .ignoresSafeArea()
                 .offset(x: offset)
                 .shadow(color: .black.opacity(0.2 * progress), radius: 20, x: 8, y: 0)
-                .gesture(
-                    DragGesture(minimumDistance: 10)
-                        .updating($closeDrag) { value, state, _ in
-                            guard value.translation.width < 0 else { return }
-                            state = value.translation.width
-                        }
-                        .onEnded { value in
-                            if value.translation.width < -(sidebarWidth * 0.3) ||
-                               value.predictedEndTranslation.width < -(sidebarWidth * 0.5) {
-                                appState.isSidebarOpen = false
-                            }
-                        }
-                )
 
-            // Left-edge hot zone — drag right from here to open
+            // Left-edge hot zone — drag right to open
             if !appState.isSidebarOpen {
                 Color.clear
                     .frame(width: 30)
@@ -66,6 +53,28 @@ struct ContentView: View {
                                 if value.translation.width > sidebarWidth * 0.3 ||
                                    value.predictedEndTranslation.width > sidebarWidth * 0.5 {
                                     appState.isSidebarOpen = true
+                                }
+                            }
+                    )
+            }
+
+            // Right-edge hot zone — drag left to close (mirrors the open hot zone)
+            if appState.isSidebarOpen {
+                Color.clear
+                    .frame(width: 64)
+                    .contentShape(Rectangle())
+                    .ignoresSafeArea()
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .gesture(
+                        DragGesture(minimumDistance: 10)
+                            .updating($closeDrag) { value, state, _ in
+                                guard value.translation.width < 0 else { return }
+                                state = value.translation.width
+                            }
+                            .onEnded { value in
+                                if value.translation.width < -(sidebarWidth * 0.3) ||
+                                   value.predictedEndTranslation.width < -(sidebarWidth * 0.5) {
+                                    appState.isSidebarOpen = false
                                 }
                             }
                     )
