@@ -41,9 +41,12 @@ struct LastAppApp: App {
         let context = container.mainContext
         let descriptor = FetchDescriptor<FeatureConfig>()
         let existing = (try? context.fetch(descriptor)) ?? []
-        guard existing.isEmpty else { return }
-        for (index, definition) in FeatureRegistry.all.enumerated() {
-            let config = FeatureConfig(featureKey: definition.key, isEnabled: true, sortOrder: index)
+        let existingKeys = Set(existing.map(\.featureKey))
+        let missing = FeatureRegistry.all.filter { !existingKeys.contains($0.key) }
+        guard !missing.isEmpty else { return }
+        let nextSortOrder = (existing.map(\.sortOrder).max() ?? -1) + 1
+        for (index, definition) in missing.enumerated() {
+            let config = FeatureConfig(featureKey: definition.key, isEnabled: true, sortOrder: nextSortOrder + index)
             context.insert(config)
         }
         try? context.save()
