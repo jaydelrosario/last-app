@@ -132,7 +132,7 @@ struct TaskListView: View {
             return allTasks.filter { $0.isCompleted && ($0.completedAt ?? Date.distantPast) >= thirtyDaysAgo }
         case .list(let id):
             return allTasks.filter { $0.list?.id == id && !$0.isCompleted }
-        case .habits, .workout, .settings:
+        case .habits, .workout, .cooking, .settings:
             return []
         }
     }
@@ -144,7 +144,7 @@ struct TaskListView: View {
         case .upcoming: "Upcoming"
         case .completed: "Completed"
         case .list(let id): allTasks.first { $0.list?.id == id }?.list?.name ?? "List"
-        case .habits, .workout, .settings: ""
+        case .habits, .workout, .cooking, .settings: ""
         }
     }
 
