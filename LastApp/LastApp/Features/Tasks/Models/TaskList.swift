@@ -10,6 +10,8 @@ final class TaskList {
     var colorHex: String = "14b8a6"
     var sortOrder: Int = 0
 
+    var folder: TaskFolder?
+
     @Relationship(deleteRule: .cascade, inverse: \TaskItem.list) var tasks: [TaskItem] = []
 
     var viewType: String = "list"

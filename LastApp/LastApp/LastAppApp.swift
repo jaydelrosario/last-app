@@ -8,7 +8,7 @@ struct LastAppApp: App {
 
     let container: ModelContainer = {
         let schema = Schema([
-            TaskItem.self, TaskList.self,
+            TaskItem.self, TaskList.self, TaskFolder.self,
             Habit.self, HabitLog.self,
             FeatureConfig.self, FeatureLink.self,
             HabitStack.self, HabitStackEntry.self,

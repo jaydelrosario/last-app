@@ -5,6 +5,7 @@ import SwiftData
 struct AddListView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \TaskFolder.sortOrder) private var folders: [TaskFolder]
 
     var existingList: TaskList? = nil
 
@@ -12,6 +13,7 @@ struct AddListView: View {
     @State private var selectedColorHex = ""   // "" = no color, else 6-char hex or "custom"
     @State private var customColor: Color = Color(red: 0.4, green: 0.6, blue: 1.0)
     @State private var selectedViewType = "list"
+    @State private var selectedFolder: TaskFolder? = nil
 
     private let presetColors: [(hex: String, color: Color)] = [
         ("ef4444", Color(red: 0.937, green: 0.267, blue: 0.267)),
@@ -29,6 +31,7 @@ struct AddListView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     nameField
+                    if !folders.isEmpty { folderSection }
                     colorSection
                     viewTypeSection
                 }
@@ -61,6 +64,56 @@ struct AddListView: View {
         }
         .padding(AppTheme.padding)
         .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Folder Section
+
+    private var folderSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Folder")
+                .font(.system(.body, weight: .bold))
+
+            VStack(spacing: 0) {
+                // None option
+                folderOption(label: "No Folder", icon: "xmark.circle", isSelected: selectedFolder == nil) {
+                    selectedFolder = nil
+                }
+
+                ForEach(folders) { folder in
+                    Divider().padding(.leading, 44)
+                    folderOption(
+                        label: folder.name,
+                        icon: "folder.fill",
+                        iconColor: folder.colorHex.isEmpty ? nil : Color(hex: folder.colorHex),
+                        isSelected: selectedFolder?.id == folder.id
+                    ) {
+                        selectedFolder = folder
+                    }
+                }
+            }
+            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private func folderOption(label: String, icon: String, iconColor: Color? = nil, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .foregroundStyle(iconColor ?? .secondary)
+                    .frame(width: 20)
+                Text(label)
+                    .foregroundStyle(.primary)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(.body, weight: .semibold))
+                        .foregroundStyle(Color.appAccent)
+                }
+            }
+            .padding(.horizontal, AppTheme.padding)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Color Section
@@ -253,6 +306,7 @@ struct AddListView: View {
         guard let list = existingList else { return }
         name = list.name
         selectedViewType = list.viewType
+        selectedFolder = list.folder
         let hex = list.colorHex
         let presetHexes = presetColors.map(\.hex)
         if hex.isEmpty {
@@ -283,9 +337,11 @@ struct AddListView: View {
             list.name = trimmed
             list.colorHex = hex
             list.viewType = selectedViewType
+            list.folder = selectedFolder
         } else {
             let list = TaskList(name: trimmed, colorHex: hex)
             list.viewType = selectedViewType
+            list.folder = selectedFolder
             modelContext.insert(list)
         }
         try? modelContext.save()
