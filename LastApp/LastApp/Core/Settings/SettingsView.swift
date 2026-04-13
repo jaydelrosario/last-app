@@ -4,9 +4,20 @@ import SwiftData
 
 struct SettingsView: View {
     @Query(sort: \FeatureConfig.sortOrder) private var featureConfigs: [FeatureConfig]
+    @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
+
+    private let restTimerOptions = [30, 60, 90, 120, 180, 300]
 
     var body: some View {
         List {
+            Section("Workout") {
+                Picker("Rest Timer", selection: $restTimerDuration) {
+                    ForEach(restTimerOptions, id: \.self) { seconds in
+                        Text(restTimerLabel(seconds)).tag(seconds)
+                    }
+                }
+            }
+
             Section("Features") {
                 ForEach(FeatureRegistry.all, id: \.key) { definition in
                     if let config = featureConfigs.first(where: { $0.featureKey == definition.key }) {
@@ -32,6 +43,13 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
+    }
+
+    private func restTimerLabel(_ seconds: Int) -> String {
+        if seconds < 60 { return "\(seconds)s" }
+        let mins = seconds / 60
+        let secs = seconds % 60
+        return secs == 0 ? "\(mins) min" : "\(mins)m \(secs)s"
     }
 }
 

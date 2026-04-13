@@ -8,10 +8,17 @@ struct ActiveWorkoutView: View {
 
     let session: WorkoutSession
 
+    @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
+
     @State private var elapsedSeconds: Int = 0
     @State private var showingPicker = false
     @State private var showingDiscardAlert = false
-    @State private var timer: Timer? = nil
+    @State private var workoutTimer: Timer? = nil
+
+    @State private var restRemaining: Int? = nil
+    @State private var restTimer: Timer? = nil
+
+    @State private var exerciseForDetail: Exercise? = nil
 
     private var hasLoggedSets: Bool {
         session.sessionExercises.contains { ex in
@@ -21,30 +28,38 @@ struct ActiveWorkoutView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    ForEach(session.orderedExercises) { sessionExercise in
-                        exerciseSection(sessionExercise)
-                    }
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        ForEach(session.orderedExercises) { sessionExercise in
+                            exerciseSection(sessionExercise)
+                        }
 
-                    // Add Exercise button
-                    Button {
-                        showingPicker = true
-                    } label: {
-                        Label("Add Exercise", systemImage: "plus")
-                            .font(.system(.body, weight: .semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.appAccent, in: RoundedRectangle(cornerRadius: 14))
-                            .foregroundStyle(.white)
+                        Button {
+                            showingPicker = true
+                        } label: {
+                            Label("Add Exercise", systemImage: "plus")
+                                .font(.system(.body, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.appAccent, in: RoundedRectangle(cornerRadius: 14))
+                                .foregroundStyle(.white)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, AppTheme.padding)
+                        .padding(.bottom, restRemaining != nil ? 120 : 40)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, AppTheme.padding)
-                    .padding(.bottom, 40)
+                    .padding(.top, 16)
                 }
-                .padding(.top, 16)
+                .background(Color(uiColor: .systemGroupedBackground))
+
+                // Rest timer banner
+                if let remaining = restRemaining {
+                    restTimerBanner(remaining: remaining)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
-            .background(Color(uiColor: .systemGroupedBackground))
+            .animation(.spring(response: 0.35, dampingFraction: 0.85), value: restRemaining != nil)
             .navigationTitle(timerString)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -58,19 +73,18 @@ struct ActiveWorkoutView: View {
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Finish") {
-                        finishWorkout()
-                    }
-                    .fontWeight(.semibold)
+                    Button("Finish") { finishWorkout() }
+                        .fontWeight(.semibold)
                 }
             }
-        }
-        .onAppear { startTimer() }
-        .onDisappear { stopTimer() }
-        .sheet(isPresented: $showingPicker) {
-            ExercisePickerView { exercise in
-                addExercise(exercise)
+            .navigationDestination(item: $exerciseForDetail) { exercise in
+                ExerciseDetailView(exercise: exercise)
             }
+        }
+        .onAppear { startWorkoutTimer() }
+        .onDisappear { stopAllTimers() }
+        .sheet(isPresented: $showingPicker) {
+            ExercisePickerView { exercise in addExercise(exercise) }
         }
         .alert("Discard Workout?", isPresented: $showingDiscardAlert) {
             Button("Discard", role: .destructive) { discardSession() }
@@ -80,16 +94,60 @@ struct ActiveWorkoutView: View {
         }
     }
 
+    // MARK: - Rest Timer Banner
+
+    private func restTimerBanner(remaining: Int) -> some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Rest Timer")
+                    .font(.system(.caption, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text(restTimerString(remaining))
+                    .font(.system(.title2, design: .monospaced, weight: .bold))
+                    .foregroundStyle(remaining <= 10 ? .red : Color.appAccent)
+            }
+
+            Spacer()
+
+            Button {
+                stopRestTimer()
+            } label: {
+                Text("Skip")
+                    .font(.system(.subheadline, weight: .semibold))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 20))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: -2)
+        .padding(.horizontal, AppTheme.padding)
+        .padding(.bottom, 20)
+    }
+
     // MARK: - Exercise Section
 
     private func exerciseSection(_ sessionExercise: SessionExercise) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(sessionExercise.exercise?.name ?? "Exercise")
-                .font(.system(.body, weight: .bold))
-                .foregroundStyle(Color.appAccent)
-                .padding(.horizontal, AppTheme.padding)
+            // Tappable exercise name → detail view
+            Button {
+                exerciseForDetail = sessionExercise.exercise
+            } label: {
+                HStack(spacing: 4) {
+                    Text(sessionExercise.exercise?.name ?? "Exercise")
+                        .font(.system(.body, weight: .bold))
+                        .foregroundStyle(Color.appAccent)
+                    Image(systemName: "chevron.right")
+                        .font(.system(.caption, weight: .bold))
+                        .foregroundStyle(Color.appAccent.opacity(0.6))
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, AppTheme.padding)
 
-            // Column headers
             HStack {
                 Text("SET").frame(width: 36, alignment: .leading)
                 Text("LBS").frame(maxWidth: .infinity, alignment: .center)
@@ -100,12 +158,10 @@ struct ActiveWorkoutView: View {
             .foregroundStyle(.tertiary)
             .padding(.horizontal, AppTheme.padding)
 
-            // Set rows
             ForEach(sessionExercise.orderedSets) { set in
                 setRow(set)
             }
 
-            // Add Set
             Button {
                 addSet(to: sessionExercise)
             } label: {
@@ -152,10 +208,12 @@ struct ActiveWorkoutView: View {
             .padding(.vertical, 6)
             .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
 
-            // Checkmark
             Button {
                 withAnimation(.spring(response: 0.25)) {
                     set.isCompleted.toggle()
+                }
+                if set.isCompleted {
+                    startRestTimer()
                 }
             } label: {
                 ZStack {
@@ -175,28 +233,51 @@ struct ActiveWorkoutView: View {
         .background(set.isCompleted ? Color.green.opacity(0.07) : Color.clear)
     }
 
-    // MARK: - Timer
+    // MARK: - Workout Timer
 
     private var timerString: String {
         let h = elapsedSeconds / 3600
         let m = (elapsedSeconds % 3600) / 60
         let s = elapsedSeconds % 60
-        if h > 0 {
-            return String(format: "%d:%02d:%02d", h, m, s)
-        }
+        if h > 0 { return String(format: "%d:%02d:%02d", h, m, s) }
         return String(format: "%02d:%02d", m, s)
     }
 
-    private func startTimer() {
+    private func startWorkoutTimer() {
         elapsedSeconds = Int(Date().timeIntervalSince(session.startedAt))
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+        workoutTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             elapsedSeconds += 1
         }
     }
 
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
+    // MARK: - Rest Timer
+
+    private func restTimerString(_ seconds: Int) -> String {
+        String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
+    private func startRestTimer() {
+        stopRestTimer()
+        restRemaining = restTimerDuration
+        restTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            if let r = restRemaining, r > 0 {
+                restRemaining = r - 1
+            } else {
+                stopRestTimer()
+            }
+        }
+    }
+
+    private func stopRestTimer() {
+        restTimer?.invalidate()
+        restTimer = nil
+        restRemaining = nil
+    }
+
+    private func stopAllTimers() {
+        workoutTimer?.invalidate()
+        workoutTimer = nil
+        stopRestTimer()
     }
 
     // MARK: - Actions
@@ -223,14 +304,14 @@ struct ActiveWorkoutView: View {
     }
 
     private func finishWorkout() {
-        stopTimer()
+        stopAllTimers()
         session.finishedAt = Date()
         try? modelContext.save()
         dismiss()
     }
 
     private func discardSession() {
-        stopTimer()
+        stopAllTimers()
         modelContext.delete(session)
         try? modelContext.save()
         dismiss()

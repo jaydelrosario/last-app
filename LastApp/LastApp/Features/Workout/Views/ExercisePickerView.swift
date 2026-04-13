@@ -15,6 +15,7 @@ struct ExercisePickerView: View {
     @State private var showingMuscleFilter = false
     @State private var showingEquipmentFilter = false
     @State private var showingCreateForm = false
+    @State private var exerciseForDetail: Exercise? = nil
 
     // Custom exercise creation fields
     @State private var newName = ""
@@ -83,20 +84,31 @@ struct ExercisePickerView: View {
                     ForEach(grouped, id: \.0) { group, exercises in
                         Section(group.displayName) {
                             ForEach(exercises) { exercise in
-                                Button {
-                                    onSelect(exercise)
-                                    dismiss()
-                                } label: {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(exercise.name)
-                                            .font(.system(.body, weight: .medium))
-                                            .foregroundStyle(.primary)
-                                        Text(exercise.equipment.displayName)
-                                            .font(.system(.caption))
+                                HStack {
+                                    Button {
+                                        onSelect(exercise)
+                                        dismiss()
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(exercise.name)
+                                                .font(.system(.body, weight: .medium))
+                                                .foregroundStyle(.primary)
+                                            Text(exercise.equipment.displayName)
+                                                .font(.system(.caption))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    Button {
+                                        exerciseForDetail = exercise
+                                    } label: {
+                                        Image(systemName: "info.circle")
                                             .foregroundStyle(.secondary)
                                     }
+                                    .buttonStyle(.plain)
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -113,6 +125,9 @@ struct ExercisePickerView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") { showingCreateForm = true }
                 }
+            }
+            .navigationDestination(item: $exerciseForDetail) { exercise in
+                ExerciseDetailView(exercise: exercise)
             }
         }
         .sheet(isPresented: $showingEquipmentFilter) {
