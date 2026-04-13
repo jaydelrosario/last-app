@@ -112,6 +112,8 @@ struct ContentView: View {
             HabitListView()
         case .workout:
             WorkoutListView()
+        case .cooking:
+            RecipeListView()
         case .settings:
             SettingsView()
         }
@@ -121,5 +123,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(AppState())
-        .modelContainer(for: [TaskItem.self, TaskList.self, Habit.self, HabitLog.self, FeatureConfig.self, FeatureLink.self, Exercise.self, Routine.self, RoutineEntry.self, WorkoutSession.self, SessionExercise.self, SessionSet.self], inMemory: true)
+        .modelContainer(for: [TaskItem.self, TaskList.self, Habit.self, HabitLog.self, FeatureConfig.self, FeatureLink.self, Exercise.self, Routine.self, RoutineEntry.self, WorkoutSession.self, SessionExercise.self, SessionSet.self, Recipe.self, Ingredient.self, RecipeStep.self, RecipeCollection.self], inMemory: true)
 }

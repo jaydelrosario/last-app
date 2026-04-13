@@ -9,5 +9,6 @@ enum SidebarDestination: Hashable {
     case list(UUID)
     case habits
     case workout
+    case cooking
     case settings
 }

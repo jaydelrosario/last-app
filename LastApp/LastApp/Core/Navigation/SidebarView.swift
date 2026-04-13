@@ -126,6 +126,7 @@ struct SidebarView: View {
         case .tasks: .inbox
         case .habits: .habits
         case .workout: .workout
+        case .cooking: .cooking
         }
     }
 }
