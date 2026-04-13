@@ -100,7 +100,7 @@ struct WorkoutListView: View {
                     }
                 }
 
-                .padding(.bottom, 40)
+                Spacer(minLength: 40)
             }
         }
         .navigationTitle("Workout")
