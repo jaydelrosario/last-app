@@ -292,6 +292,7 @@ struct SidebarView: View {
         case .habits: .habits
         case .workout: .workout
         case .cooking: .cooking
+        case .notes: .notes
         }
     }
 }
