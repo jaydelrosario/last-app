@@ -152,7 +152,7 @@ struct NoteListView: View {
                     if let nb = note.notebook {
                         Text(nb.name)
                             .font(.system(.caption2))
-                            .foregroundStyle(nb.colorHex.isEmpty ? .tertiary : Color(hex: nb.colorHex))
+                            .foregroundStyle(nb.colorHex.isEmpty ? Color.secondary : Color(hex: nb.colorHex))
                     }
                     ForEach(note.tags.prefix(2), id: \.self) { tag in
                         Text("#\(tag)")

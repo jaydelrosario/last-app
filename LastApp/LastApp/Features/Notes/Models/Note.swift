@@ -14,7 +14,6 @@ final class Note {
     var isPinned: Bool = false
     var tags: [String] = []
 
-    @Relationship(deleteRule: .nullify, inverse: \NoteNotebook.notes)
     var notebook: NoteNotebook?
 
     /// First non-empty line of plainText, fallback "New Note"

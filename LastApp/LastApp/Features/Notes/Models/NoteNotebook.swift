@@ -9,7 +9,7 @@ final class NoteNotebook {
     var colorHex: String = ""
     var sortOrder: Int = 0
 
-    @Relationship(deleteRule: .nullify)
+    @Relationship(deleteRule: .nullify, inverse: \Note.notebook)
     var notes: [Note] = []
 
     init(name: String, colorHex: String = "", sortOrder: Int = 0) {
