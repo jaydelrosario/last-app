@@ -69,7 +69,7 @@ struct HabitStackView: View {
                             .foregroundStyle(canSave ? .white : Color.secondary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(canSave ? Color.primary : Color.secondary.opacity(0.15), in: Capsule())
+                            .background(canSave ? Color.appAccent : Color.secondary.opacity(0.15), in: Capsule())
                     }
                     .buttonStyle(.plain)
                     .disabled(!canSave)

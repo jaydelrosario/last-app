@@ -3,6 +3,7 @@ import SwiftUI
 
 struct HabitRowView: View {
     let habit: Habit
+    var date: Date = .now
     let onToggle: () -> Void
 
     var body: some View {
@@ -48,11 +49,11 @@ struct HabitRowView: View {
             Button(action: onToggle) {
                 ZStack {
                     Circle()
-                        .fill(habit.isCompletedToday ? habit.accentColor : Color.secondary.opacity(0.12))
+                        .fill(habit.isCompleted(on: date) ? habit.accentColor : Color.secondary.opacity(0.12))
                         .frame(width: 36, height: 36)
-                    Image(systemName: habit.isCompletedToday ? "checkmark" : "plus")
+                    Image(systemName: habit.isCompleted(on: date) ? "checkmark" : "plus")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(habit.isCompletedToday ? .white : Color.secondary)
+                        .foregroundStyle(habit.isCompleted(on: date) ? .white : Color.secondary)
                 }
             }
             .buttonStyle(.plain)

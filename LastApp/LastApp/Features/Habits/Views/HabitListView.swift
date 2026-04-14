@@ -10,6 +10,7 @@ struct HabitListView: View {
     @State private var showingStackCreation = false
     @State private var editingStack: HabitStack?
     @State private var selectedHabit: Habit?
+    @State private var selectedDate: Date = Calendar.current.startOfDay(for: .now)
 
     private var viewModel: HabitViewModel {
         HabitViewModel(context: modelContext)
@@ -69,24 +70,32 @@ struct HabitListView: View {
         return HStack(spacing: 0) {
             ForEach(Array(days.enumerated()), id: \.offset) { i, day in
                 let isToday = calendar.isDate(day, inSameDayAs: today)
+                let isSelected = calendar.isDate(day, inSameDayAs: selectedDate)
                 let dayNum = calendar.component(.day, from: day)
-                VStack(spacing: 4) {
-                    Text(dayNames[i])
-                        .font(.system(.caption2, weight: .medium))
-                        .foregroundStyle(isToday ? .primary : .tertiary)
-                    ZStack {
-                        if isToday {
-                            Circle()
-                                .fill(Color.primary)
-                                .frame(width: 28, height: 28)
-                        }
-                        Text("\(dayNum)")
-                            .font(.system(.subheadline, weight: isToday ? .bold : .regular))
-                            .foregroundStyle(isToday ? Color(uiColor: .systemBackground) : .secondary)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        selectedDate = calendar.startOfDay(for: day)
                     }
-                    .frame(width: 28, height: 28)
+                } label: {
+                    VStack(spacing: 4) {
+                        Text(dayNames[i])
+                            .font(.system(.caption2, weight: .medium))
+                            .foregroundStyle(isSelected ? .primary : .tertiary)
+                        ZStack {
+                            if isSelected {
+                                Circle()
+                                    .fill(isToday ? Color.primary : Color.appAccent)
+                                    .frame(width: 28, height: 28)
+                            }
+                            Text("\(dayNum)")
+                                .font(.system(.subheadline, weight: isSelected ? .bold : .regular))
+                                .foregroundStyle(isSelected ? Color(uiColor: .systemBackground) : .secondary)
+                        }
+                        .frame(width: 28, height: 28)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, AppTheme.padding)
@@ -109,8 +118,8 @@ struct HabitListView: View {
                             .padding(.horizontal, AppTheme.padding)
 
                         ForEach(habits) { habit in
-                            HabitRowView(habit: habit) {
-                                withAnimation { viewModel.toggleToday(habit) }
+                            HabitRowView(habit: habit, date: selectedDate) {
+                                withAnimation { viewModel.toggle(habit, for: selectedDate) }
                             }
                             .padding(.horizontal, AppTheme.padding)
                             .onTapGesture { selectedHabit = habit }

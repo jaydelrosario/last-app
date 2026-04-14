@@ -85,7 +85,10 @@ struct ContentView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        NavigationStack {
+        NavigationStack(path: Binding(
+            get: { appState.navigationPath },
+            set: { appState.navigationPath = $0 }
+        )) {
             destinationView
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {

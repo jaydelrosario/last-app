@@ -83,9 +83,13 @@ final class Habit {
     }
 
     var isCompletedToday: Bool {
-        let today = Calendar.current.startOfDay(for: .now)
+        isCompleted(on: .now)
+    }
+
+    func isCompleted(on date: Date) -> Bool {
+        let day = Calendar.current.startOfDay(for: date)
         return logs.contains {
-            $0.isCompleted && Calendar.current.startOfDay(for: $0.date) == today
+            $0.isCompleted && Calendar.current.startOfDay(for: $0.date) == day
         }
     }
 

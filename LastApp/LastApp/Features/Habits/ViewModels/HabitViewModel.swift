@@ -17,13 +17,17 @@ final class HabitViewModel {
     }
 
     func toggleToday(_ habit: Habit) {
-        let today = Calendar.current.startOfDay(for: .now)
+        toggle(habit, for: .now)
+    }
+
+    func toggle(_ habit: Habit, for date: Date) {
+        let day = Calendar.current.startOfDay(for: date)
         if let existing = habit.logs.first(where: {
-            Calendar.current.startOfDay(for: $0.date) == today
+            Calendar.current.startOfDay(for: $0.date) == day
         }) {
             existing.isCompleted.toggle()
         } else {
-            let log = HabitLog(date: Date(), isCompleted: true, habit: habit)
+            let log = HabitLog(date: date, isCompleted: true, habit: habit)
             context.insert(log)
         }
     }

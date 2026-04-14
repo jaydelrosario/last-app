@@ -7,6 +7,16 @@ struct FeatureToggleView: View {
 
     var body: some View {
         HStack(spacing: 14) {
+            Image(systemName: "line.3.horizontal")
+                .font(.system(.caption, weight: .regular))
+                .foregroundStyle(.quaternary)
+                .frame(width: 16)
+                .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, perform: {}) { pressing in
+                    if pressing {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    }
+                }
+
             Image(systemName: definition.icon)
                 .font(.system(.body, weight: .medium))
                 .foregroundStyle(Color.appAccent)

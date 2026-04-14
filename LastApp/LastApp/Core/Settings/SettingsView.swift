@@ -3,6 +3,7 @@ import SwiftUI
 import SwiftData
 
 struct SettingsView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \FeatureConfig.sortOrder) private var featureConfigs: [FeatureConfig]
     @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
     @AppStorage("weightUnit") private var weightUnit: String = "lbs"
@@ -24,8 +25,8 @@ struct SettingsView: View {
             }
 
             Section("Features") {
-                ForEach(FeatureRegistry.all, id: \.key) { definition in
-                    if let config = featureConfigs.first(where: { $0.featureKey == definition.key }) {
+                ForEach(featureConfigs) { config in
+                    if let definition = FeatureRegistry.definition(for: config.featureKey) {
                         FeatureToggleView(
                             definition: definition,
                             isEnabled: Binding(
@@ -34,6 +35,14 @@ struct SettingsView: View {
                             )
                         )
                     }
+                }
+                .onMove { source, destination in
+                    var reordered = featureConfigs
+                    reordered.move(fromOffsets: source, toOffset: destination)
+                    for (index, config) in reordered.enumerated() {
+                        config.sortOrder = index
+                    }
+                    try? modelContext.save()
                 }
             }
 
@@ -48,6 +57,9 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            EditButton()
+        }
     }
 
     private func restTimerLabel(_ seconds: Int) -> String {

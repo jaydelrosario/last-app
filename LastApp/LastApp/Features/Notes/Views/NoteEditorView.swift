@@ -107,13 +107,13 @@ struct NoteEditorView: View {
 
     private var panel1: some View {
         HStack(spacing: 0) {
-            toolbarButton(icon: "bold") { textViewRef?.toggleBold() }
-            toolbarButton(icon: "italic") { textViewRef?.toggleItalic() }
-            toolbarButton(icon: "highlighter") { textViewRef?.toggleHighlight() }
-            toolbarButton(icon: "h.square") { textViewRef?.toggleHeading() }
-            toolbarButton(icon: "checklist") { textViewRef?.insertCheckbox() }
-            toolbarButton(icon: "list.bullet") { textViewRef?.insertBullet() }
-            toolbarButton(icon: "list.number") { textViewRef?.insertNumberedItem() }
+            toolbarButton(icon: "bold") { format { $0.toggleBold() } }
+            toolbarButton(icon: "italic") { format { $0.toggleItalic() } }
+            toolbarButton(icon: "highlighter") { format { $0.toggleHighlight() } }
+            toolbarButton(icon: "h.square") { format { $0.toggleHeading() } }
+            toolbarButton(icon: "checklist") { format { $0.insertCheckbox() } }
+            toolbarButton(icon: "list.bullet") { format { $0.insertBullet() } }
+            toolbarButton(icon: "list.number") { format { $0.insertNumberedItem() } }
             Spacer()
             toolbarButton(icon: "chevron.right") { showPanel2 = true }
         }
@@ -122,15 +122,21 @@ struct NoteEditorView: View {
     private var panel2: some View {
         HStack(spacing: 0) {
             toolbarButton(icon: "chevron.left") { showPanel2 = false }
-            toolbarButton(icon: "strikethrough") { textViewRef?.toggleStrikethrough() }
-            toolbarButton(icon: "minus") { textViewRef?.insertDivider() }
+            toolbarButton(icon: "strikethrough") { format { $0.toggleStrikethrough() } }
+            toolbarButton(icon: "minus") { format { $0.insertDivider() } }
             toolbarButton(icon: "link") { showingLinkAlert = true }
             if textViewRef?.cursorIsInLink == true {
-                toolbarButton(icon: "link.badge.minus") { textViewRef?.removeLink() }
+                toolbarButton(icon: "link.badge.minus") { format { $0.removeLink() } }
             }
-            toolbarButton(icon: "chevron.left.forwardslash.chevron.right") { textViewRef?.toggleCode() }
+            toolbarButton(icon: "chevron.left.forwardslash.chevron.right") { format { $0.toggleCode() } }
             Spacer()
         }
+    }
+
+    private func format(_ action: (UITextView) -> Void) {
+        guard let tv = textViewRef else { return }
+        action(tv)
+        attributedText = tv.attributedText
     }
 
     private func toolbarButton(icon: String, action: @escaping () -> Void) -> some View {

@@ -47,28 +47,10 @@ struct WorkoutListView: View {
                         Text("Routines")
                             .font(.system(.title3, weight: .bold))
                         Spacer()
-                        Button {
-                            showingRoutineBuilder = true
-                        } label: {
-                            Image(systemName: "plus.square")
-                                .font(.system(.body, weight: .medium))
-                                .foregroundStyle(Color.appAccent)
-                        }
                     }
                     .padding(.horizontal, AppTheme.padding)
 
-                    if routines.isEmpty {
-                        VStack(spacing: 12) {
-                            Image(systemName: "dumbbell")
-                                .font(.system(size: 40))
-                                .foregroundStyle(.tertiary)
-                            Text("No routines yet")
-                                .font(.system(.subheadline))
-                                .foregroundStyle(.tertiary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 40)
-                    } else {
+                    if !routines.isEmpty {
                         VStack(spacing: 12) {
                             ForEach(routines) { routine in
                                 routineCard(routine)
@@ -76,6 +58,27 @@ struct WorkoutListView: View {
                             }
                         }
                     }
+
+                    Button {
+                        showingRoutineBuilder = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus")
+                                .font(.system(.body, weight: .medium))
+                            Text("Add new routine")
+                                .font(.system(.body, weight: .medium))
+                        }
+                        .foregroundStyle(Color.appAccent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                                .foregroundStyle(Color.appAccent.opacity(0.5))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, AppTheme.padding)
                 }
 
                 // History section
