@@ -10,5 +10,6 @@ enum SidebarDestination: Hashable {
     case habits
     case workout
     case cooking
+    case notes
     case settings
 }

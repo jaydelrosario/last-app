@@ -14,7 +14,8 @@ struct LastAppApp: App {
             HabitStack.self, HabitStackEntry.self,
             Exercise.self, Routine.self, RoutineEntry.self,
             WorkoutSession.self, SessionExercise.self, SessionSet.self,
-            Recipe.self, Ingredient.self, RecipeStep.self, RecipeCollection.self
+            Recipe.self, Ingredient.self, RecipeStep.self, RecipeCollection.self,
+            Note.self, NoteNotebook.self
         ])
         let container = try! ModelContainer(for: schema)
         return container
@@ -38,6 +39,7 @@ struct LastAppApp: App {
         FeatureRegistry.register(HabitsFeature.definition)
         FeatureRegistry.register(WorkoutFeature.definition)
         FeatureRegistry.register(CookingFeature.definition)
+        FeatureRegistry.register(NotesFeature.definition)
     }
 
     @MainActor
