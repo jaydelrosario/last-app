@@ -9,29 +9,25 @@ final class Note {
     var modifiedAt: Date = Date()
     /// Archived NSAttributedString
     var bodyData: Data = Data()
+    /// Plain text extracted from bodyData — updated by NoteEditorView on save
+    var plainText: String = ""
     var isPinned: Bool = false
     var tags: [String] = []
 
     @Relationship(deleteRule: .nullify, inverse: \NoteNotebook.notes)
     var notebook: NoteNotebook?
 
-    /// First non-empty line of plain text body, fallback "New Note"
+    /// First non-empty line of plainText, fallback "New Note"
     var title: String {
-        guard let attr = try? NSKeyedUnarchiver.unarchivedObject(
-            ofClass: NSAttributedString.self, from: bodyData
-        ) else { return "New Note" }
-        let line = attr.string
+        let line = plainText
             .components(separatedBy: .newlines)
             .first(where: { !$0.trimmingCharacters(in: .whitespaces).isEmpty })
         return line.map { String($0.prefix(80)) } ?? "New Note"
     }
 
-    /// Second non-empty line (used as subtitle in list rows)
+    /// Second non-empty line of plainText
     var subtitle: String {
-        guard let attr = try? NSKeyedUnarchiver.unarchivedObject(
-            ofClass: NSAttributedString.self, from: bodyData
-        ) else { return "" }
-        let lines = attr.string
+        let lines = plainText
             .components(separatedBy: .newlines)
             .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         guard lines.count > 1 else { return "" }
