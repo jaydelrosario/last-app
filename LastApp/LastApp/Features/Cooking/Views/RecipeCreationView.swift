@@ -36,11 +36,20 @@ struct RecipeCreationView: View {
     @State private var ingredients: [DraftIngredient] = [DraftIngredient()]
     @State private var steps: [DraftStep] = [DraftStep()]
 
+    // URL import
+    @State private var urlText = ""
+    @State private var isImporting = false
+    @State private var importError: String? = nil
+    @State private var showImportError = false
+
     // MARK: - Body
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    urlImportRow
+                }
                 Section("Photo") {
                     photoPicker
                 }
@@ -63,6 +72,11 @@ struct RecipeCreationView: View {
             }
             .navigationTitle("New Recipe")
             .navigationBarTitleDisplayMode(.inline)
+            .alert("Import Failed", isPresented: $showImportError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(importError ?? "Unknown error")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -70,6 +84,67 @@ struct RecipeCreationView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
                         .disabled(!canSave)
+                }
+            }
+        }
+    }
+
+    // MARK: - URL Import
+
+    private var urlImportRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "link")
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
+            TextField("Paste recipe URL…", text: $urlText)
+                .keyboardType(.URL)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .submitLabel(.go)
+                .onSubmit { importFromURL() }
+            if isImporting {
+                ProgressView()
+                    .frame(width: 28, height: 28)
+            } else if !urlText.isEmpty {
+                Button {
+                    importFromURL()
+                } label: {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.system(.title3))
+                        .foregroundStyle(Color.appAccent)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private func importFromURL() {
+        guard !urlText.isEmpty else { return }
+        isImporting = true
+        Task {
+            do {
+                let scraped = try await RecipeScraper.scrape(urlString: urlText)
+                await MainActor.run {
+                    if !scraped.title.isEmpty { title = scraped.title }
+                    if !scraped.description.isEmpty { desc = scraped.description }
+                    if scraped.prepMinutes > 0 { prepMinutes = scraped.prepMinutes }
+                    if scraped.cookMinutes > 0 { cookMinutes = scraped.cookMinutes }
+                    if scraped.servings > 1 { baseServings = scraped.servings }
+                    if !scraped.ingredients.isEmpty {
+                        ingredients = scraped.ingredients.map {
+                            DraftIngredient(amount: $0.amount, unit: $0.unit, name: $0.name)
+                        }
+                    }
+                    if !scraped.steps.isEmpty {
+                        steps = scraped.steps.map { DraftStep(instruction: $0) }
+                    }
+                    isImporting = false
+                }
+            } catch {
+                await MainActor.run {
+                    importError = error.localizedDescription
+                    showImportError = true
+                    isImporting = false
                 }
             }
         }
