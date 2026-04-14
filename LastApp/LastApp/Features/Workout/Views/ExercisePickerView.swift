@@ -124,6 +124,28 @@ struct ExercisePickerView: View {
                 }
                 .listStyle(.insetGrouped)
             }
+            .safeAreaInset(edge: .bottom) {
+                if !selectedIDs.isEmpty {
+                    Button {
+                        let exercises = allExercises.filter { selectedIDs.contains($0.id) }
+                        onSelect(exercises)
+                        dismiss()
+                    } label: {
+                        Text("Add \(selectedIDs.count) exercise\(selectedIDs.count == 1 ? "" : "s")")
+                            .font(.system(.body, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.appAccent, in: RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, AppTheme.padding)
+                    .padding(.bottom, 8)
+                    .background(.regularMaterial)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.spring(response: 0.3), value: selectedIDs.isEmpty)
             .background(Color(uiColor: .systemGroupedBackground))
             .navigationTitle("Add Exercise")
             .navigationBarTitleDisplayMode(.inline)
@@ -135,15 +157,6 @@ struct ExercisePickerView: View {
                     Button { showingCreateForm = true } label: {
                         Image(systemName: "plus")
                     }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(selectedIDs.isEmpty ? "Add" : "Add (\(selectedIDs.count))") {
-                        let exercises = allExercises.filter { selectedIDs.contains($0.id) }
-                        onSelect(exercises)
-                        dismiss()
-                    }
-                    .disabled(selectedIDs.isEmpty)
-                    .fontWeight(.semibold)
                 }
             }
             .navigationDestination(item: $exerciseForDetail) { exercise in
