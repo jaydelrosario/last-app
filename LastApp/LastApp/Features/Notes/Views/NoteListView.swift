@@ -172,7 +172,7 @@ struct NoteListView: View {
                 note.isPinned.toggle()
                 try? modelContext.save()
             } label: {
-                Label(note.isPinned ? "Unpin" : "Pin", systemImage: note.isPinned ? "pin.slash" : "pin")
+                Image(systemName: note.isPinned ? "pin.slash" : "pin")
             }
             .tint(Color.appAccent)
         }
@@ -181,7 +181,7 @@ struct NoteListView: View {
                 modelContext.delete(note)
                 try? modelContext.save()
             } label: {
-                Label("Delete", systemImage: "trash")
+                Image(systemName: "trash")
             }
         }
     }
