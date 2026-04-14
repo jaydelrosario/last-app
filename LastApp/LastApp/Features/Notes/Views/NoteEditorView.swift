@@ -156,9 +156,9 @@ struct NoteEditorView: View {
     private func save() {
         if let data = try? NSKeyedArchiver.archivedData(withRootObject: attributedText, requiringSecureCoding: false) {
             note.bodyData = data
+            note.plainText = attributedText.string
+            note.modifiedAt = Date()
+            try? modelContext.save()
         }
-        note.plainText = attributedText.string
-        note.modifiedAt = Date()
-        try? modelContext.save()
     }
 }
