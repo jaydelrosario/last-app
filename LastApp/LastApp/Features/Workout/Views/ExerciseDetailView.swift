@@ -60,11 +60,12 @@ struct ExerciseDetailView: View {
             .padding(.horizontal)
             .padding(.vertical, 12)
 
-            if selectedTab == 0 {
-                summaryTab
-            } else {
-                historyTab
+            TabView(selection: $selectedTab) {
+                summaryTab.tag(0)
+                historyTab.tag(1)
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .animation(.easeInOut(duration: 0.2), value: selectedTab)
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle(exercise.name)

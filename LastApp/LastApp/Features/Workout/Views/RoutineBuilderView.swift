@@ -72,8 +72,8 @@ struct RoutineBuilderView: View {
             .onAppear { loadExisting() }
         }
         .sheet(isPresented: $showingPicker) {
-            ExercisePickerView { exercise in
-                entries.append((exercise: exercise, setCount: 3))
+            ExercisePickerView { exercises in
+                exercises.forEach { entries.append((exercise: $0, setCount: 3)) }
             }
         }
     }

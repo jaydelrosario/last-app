@@ -7,8 +7,9 @@ struct ExercisePickerView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Exercise.name) private var allExercises: [Exercise]
 
-    let onSelect: (Exercise) -> Void
+    let onSelect: ([Exercise]) -> Void
 
+    @State private var selectedIDs: Set<UUID> = []
     @State private var searchText = ""
     @State private var selectedMuscle: MuscleGroup? = nil
     @State private var selectedEquipment: Equipment? = nil
@@ -86,18 +87,26 @@ struct ExercisePickerView: View {
                             ForEach(exercises) { exercise in
                                 HStack {
                                     Button {
-                                        onSelect(exercise)
-                                        dismiss()
-                                    } label: {
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(exercise.name)
-                                                .font(.system(.body, weight: .medium))
-                                                .foregroundStyle(.primary)
-                                            Text(exercise.equipment.displayName)
-                                                .font(.system(.caption))
-                                                .foregroundStyle(.secondary)
+                                        if selectedIDs.contains(exercise.id) {
+                                            selectedIDs.remove(exercise.id)
+                                        } else {
+                                            selectedIDs.insert(exercise.id)
                                         }
-                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                    } label: {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: selectedIDs.contains(exercise.id) ? "checkmark.circle.fill" : "circle")
+                                                .foregroundStyle(selectedIDs.contains(exercise.id) ? Color.appAccent : .secondary)
+                                                .font(.system(.title3))
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(exercise.name)
+                                                    .font(.system(.body, weight: .medium))
+                                                    .foregroundStyle(.primary)
+                                                Text(exercise.equipment.displayName)
+                                                    .font(.system(.caption))
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        }
                                     }
                                     .buttonStyle(.plain)
 
@@ -122,8 +131,19 @@ struct ExercisePickerView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showingCreateForm = true } label: {
+                        Image(systemName: "plus")
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") { showingCreateForm = true }
+                    Button(selectedIDs.isEmpty ? "Add" : "Add (\(selectedIDs.count))") {
+                        let exercises = allExercises.filter { selectedIDs.contains($0.id) }
+                        onSelect(exercises)
+                        dismiss()
+                    }
+                    .disabled(selectedIDs.isEmpty)
+                    .fontWeight(.semibold)
                 }
             }
             .navigationDestination(item: $exerciseForDetail) { exercise in

@@ -111,7 +111,7 @@ struct ActiveWorkoutView: View {
         }
         .onDisappear { stopAllTimers() }
         .sheet(isPresented: $showingPicker) {
-            ExercisePickerView { exercise in addExercise(exercise) }
+            ExercisePickerView { exercises in exercises.forEach { addExercise($0) } }
         }
         .alert("Discard Workout?", isPresented: $showingDiscardAlert) {
             Button("Discard", role: .destructive) { discardSession() }
