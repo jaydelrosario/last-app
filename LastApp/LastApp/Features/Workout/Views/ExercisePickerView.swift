@@ -191,6 +191,7 @@ struct ExercisePickerView: View {
                             Image(systemName: "checkmark").foregroundStyle(Color.appAccent)
                         }
                     }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
 
@@ -206,6 +207,7 @@ struct ExercisePickerView: View {
                                 Image(systemName: "checkmark").foregroundStyle(Color.appAccent)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -235,6 +237,7 @@ struct ExercisePickerView: View {
                             Image(systemName: "checkmark").foregroundStyle(Color.appAccent)
                         }
                     }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
 
@@ -250,6 +253,7 @@ struct ExercisePickerView: View {
                                 Image(systemName: "checkmark").foregroundStyle(Color.appAccent)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }

@@ -7,6 +7,9 @@ struct TaskListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TaskItem.sortOrder) private var allTasks: [TaskItem]
     @State private var showingCreation = false
+    @State private var lastCompletedTask: TaskItem? = nil
+    @State private var showToast = false
+    @State private var toastId = UUID()
 
     private var viewModel: TaskViewModel {
         TaskViewModel(context: modelContext)
@@ -22,6 +25,14 @@ struct TaskListView: View {
                 }
             }
 
+            if showToast {
+                completionToast
+                    .padding(.bottom, 74)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
+            }
+
             Button {
                 showingCreation = true
             } label: {
@@ -34,6 +45,11 @@ struct TaskListView: View {
                     .shadow(color: Color.appAccent.opacity(0.4), radius: 8, x: 0, y: 4)
             }
             .padding(AppTheme.padding)
+        }
+        .task(id: toastId) {
+            guard showToast else { return }
+            try? await Task.sleep(for: .seconds(3))
+            withAnimation(.spring) { showToast = false }
         }
         .navigationTitle(navigationTitle)
         .navigationBarTitleDisplayMode(.large)
@@ -48,6 +64,11 @@ struct TaskListView: View {
                 NavigationLink(value: task) {
                     TaskRowView(task: task) {
                         withAnimation { viewModel.toggleComplete(task) }
+                        if task.isCompleted {
+                            lastCompletedTask = task
+                            toastId = UUID()
+                            withAnimation(.spring) { showToast = true }
+                        }
                     }
                 }
                 .listRowInsets(EdgeInsets())
@@ -99,6 +120,38 @@ struct TaskListView: View {
         }
         .padding(.horizontal, 40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Completion Toast
+
+    private var completionToast: some View {
+        Button {
+            if let task = lastCompletedTask {
+                withAnimation { viewModel.toggleComplete(task) }
+            }
+            withAnimation(.spring) { showToast = false }
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(Color.appAccent)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Undo")
+                        .font(.system(.subheadline, weight: .bold))
+                        .foregroundStyle(Color.appAccent)
+                    Text("Completed")
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(.primary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, AppTheme.padding)
     }
 
     private var emptyStateSubtitle: String {

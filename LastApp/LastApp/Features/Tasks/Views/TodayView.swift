@@ -7,6 +7,9 @@ struct TodayView: View {
     @Query(sort: \TaskItem.sortOrder) private var allTasks: [TaskItem]
     @Query(sort: \Habit.createdAt) private var habits: [Habit]
     @State private var showingTaskCreation = false
+    @State private var lastCompletedTask: TaskItem? = nil
+    @State private var showToast = false
+    @State private var toastId = UUID()
 
     private var taskVM: TaskViewModel { TaskViewModel(context: modelContext) }
     private var habitVM: HabitViewModel { HabitViewModel(context: modelContext) }
@@ -22,6 +25,14 @@ struct TodayView: View {
                 }
             }
 
+            if showToast {
+                completionToast
+                    .padding(.bottom, 74)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
+            }
+
             Button {
                 showingTaskCreation = true
             } label: {
@@ -34,6 +45,11 @@ struct TodayView: View {
                     .shadow(color: Color.appAccent.opacity(0.4), radius: 8, x: 0, y: 4)
             }
             .padding(AppTheme.padding)
+        }
+        .task(id: toastId) {
+            guard showToast else { return }
+            try? await Task.sleep(for: .seconds(3))
+            withAnimation(.spring) { showToast = false }
         }
         .navigationTitle("Today")
         .navigationBarTitleDisplayMode(.large)
@@ -112,6 +128,11 @@ struct TodayView: View {
                     NavigationLink(value: task) {
                         TaskRowView(task: task) {
                             withAnimation { taskVM.toggleComplete(task) }
+                            if task.isCompleted {
+                                lastCompletedTask = task
+                                toastId = UUID()
+                                withAnimation(.spring) { showToast = true }
+                            }
                         }
                     }
                     .buttonStyle(.plain)
@@ -127,6 +148,38 @@ struct TodayView: View {
 
     private var todayTasks: [TaskItem] {
         allTasks.filter { !$0.isCompleted && ($0.dueDate.map { $0 <= Date().endOfDay } ?? false) }
+    }
+
+    // MARK: - Completion Toast
+
+    private var completionToast: some View {
+        Button {
+            if let task = lastCompletedTask {
+                withAnimation { taskVM.toggleComplete(task) }
+            }
+            withAnimation(.spring) { showToast = false }
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: "arrow.uturn.backward")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(Color.appAccent)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Undo")
+                        .font(.system(.subheadline, weight: .bold))
+                        .foregroundStyle(Color.appAccent)
+                    Text("Completed")
+                        .font(.system(.subheadline, weight: .semibold))
+                        .foregroundStyle(.primary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, AppTheme.padding)
     }
 
     private func sectionHeader(_ title: String) -> some View {
