@@ -76,24 +76,48 @@ struct NoteListView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List {
-                        if !pinnedNotes.isEmpty {
-                            Section("Pinned") {
-                                ForEach(pinnedNotes) { note in
-                                    noteRow(note)
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 0, pinnedViews: .sectionHeaders) {
+                            if !pinnedNotes.isEmpty {
+                                Section {
+                                    ForEach(pinnedNotes) { note in
+                                        SwipeNoteRow(note: note) {
+                                            selectedNote = note
+                                        } onDelete: {
+                                            modelContext.delete(note)
+                                            try? modelContext.save()
+                                        } onPin: {
+                                            note.isPinned.toggle()
+                                            try? modelContext.save()
+                                        }
+                                    }
+                                } header: {
+                                    sectionHeader("PINNED")
                                 }
                             }
-                        }
 
-                        if !unpinnedNotes.isEmpty {
-                            Section(pinnedNotes.isEmpty ? "" : "Notes") {
-                                ForEach(unpinnedNotes) { note in
-                                    noteRow(note)
+                            if !unpinnedNotes.isEmpty {
+                                Section {
+                                    ForEach(unpinnedNotes) { note in
+                                        SwipeNoteRow(note: note) {
+                                            selectedNote = note
+                                        } onDelete: {
+                                            modelContext.delete(note)
+                                            try? modelContext.save()
+                                        } onPin: {
+                                            note.isPinned.toggle()
+                                            try? modelContext.save()
+                                        }
+                                    }
+                                } header: {
+                                    if !pinnedNotes.isEmpty {
+                                        sectionHeader("NOTES")
+                                    }
                                 }
                             }
                         }
+                        .padding(.bottom, 90)
                     }
-                    .listStyle(.plain)
                 }
             }
 
@@ -132,8 +156,111 @@ struct NoteListView: View {
         }
     }
 
-    private func noteRow(_ note: Note) -> some View {
-        Button { selectedNote = note } label: {
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(.caption2, design: .rounded, weight: .semibold))
+            .foregroundStyle(.tertiary)
+            .padding(.horizontal, AppTheme.padding)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(uiColor: .systemBackground))
+    }
+
+    private func notebookChip(label: String, color: Color?, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                if let c = color {
+                    Circle().fill(c).frame(width: 8, height: 8)
+                }
+                Text(label)
+                    .font(.system(.subheadline, weight: isSelected ? .semibold : .regular))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                isSelected ? Color.appAccent.opacity(0.12) : Color.secondary.opacity(0.08),
+                in: Capsule()
+            )
+            .foregroundStyle(isSelected ? Color.appAccent : .primary)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Custom swipe row
+
+private struct SwipeNoteRow: View {
+    let note: Note
+    let onTap: () -> Void
+    let onDelete: () -> Void
+    let onPin: () -> Void
+
+    @State private var offset: CGFloat = 0
+    @State private var anchorOffset: CGFloat = 0
+    private let actionWidth: CGFloat = 68
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            // Action buttons revealed behind
+            HStack(spacing: 0) {
+                Button {
+                    withAnimation(.spring(response: 0.3)) { offset = 0 }
+                    onPin()
+                } label: {
+                    Image(systemName: note.isPinned ? "pin.slash" : "pin")
+                        .font(.system(.body, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: actionWidth)
+                        .frame(maxHeight: .infinity)
+                        .background(Color.appAccent)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    withAnimation(.spring(response: 0.3)) { offset = 0 }
+                    onDelete()
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(.body, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: actionWidth)
+                        .frame(maxHeight: .infinity)
+                        .background(Color.red)
+                }
+                .buttonStyle(.plain)
+            }
+            .frame(width: min(-offset, actionWidth * 2), alignment: .trailing)
+            .clipped()
+
+            // Note content (slides left up to max reveal)
+            noteContent
+                .offset(x: offset)
+                .gesture(
+                    DragGesture(minimumDistance: 12, coordinateSpace: .local)
+                        .onChanged { value in
+                            let maxReveal = actionWidth * 2
+                            offset = min(0, max(-maxReveal, anchorOffset + value.translation.width))
+                        }
+                        .onEnded { _ in
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                if -offset > actionWidth {
+                                    offset = -actionWidth * 2
+                                    anchorOffset = -actionWidth * 2
+                                } else {
+                                    offset = 0
+                                    anchorOffset = 0
+                                }
+                            }
+                        }
+                )
+        }
+        .clipped()
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+    }
+
+    private var noteContent: some View {
+        Button(action: onTap) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(note.title)
                     .font(.system(.body, weight: .semibold))
@@ -161,47 +288,11 @@ struct NoteListView: View {
                     }
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 12)
+            .padding(.horizontal, AppTheme.padding)
             .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .buttonStyle(.plain)
-        .listRowInsets(EdgeInsets(top: 8, leading: AppTheme.padding, bottom: 8, trailing: AppTheme.padding))
-        .listRowSeparator(.hidden)
-        .swipeActions(edge: .leading) {
-            Button {
-                note.isPinned.toggle()
-                try? modelContext.save()
-            } label: {
-                Image(systemName: note.isPinned ? "pin.slash" : "pin")
-            }
-            .tint(Color.appAccent)
-        }
-        .swipeActions(edge: .trailing) {
-            Button(role: .destructive) {
-                modelContext.delete(note)
-                try? modelContext.save()
-            } label: {
-                Image(systemName: "trash")
-            }
-        }
-    }
-
-    private func notebookChip(label: String, color: Color?, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 5) {
-                if let c = color {
-                    Circle().fill(c).frame(width: 8, height: 8)
-                }
-                Text(label)
-                    .font(.system(.subheadline, weight: isSelected ? .semibold : .regular))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                isSelected ? Color.appAccent.opacity(0.12) : Color.secondary.opacity(0.08),
-                in: Capsule()
-            )
-            .foregroundStyle(isSelected ? Color.appAccent : .primary)
+            .background(Color(uiColor: .systemBackground))
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
