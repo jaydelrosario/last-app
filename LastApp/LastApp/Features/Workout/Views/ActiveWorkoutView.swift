@@ -103,13 +103,22 @@ struct ActiveWorkoutView: View {
                 ExerciseDetailView(exercise: exercise)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { notification in
+            if let textField = notification.object as? UITextField {
+                textField.selectAll(nil)
+            }
+        }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
             startWorkoutTimer()
             notes = session.notes
             impactFeedback.prepare()
             notificationFeedback.prepare()
         }
-        .onDisappear { stopAllTimers() }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+            stopAllTimers()
+        }
         .sheet(isPresented: $showingPicker) {
             ExercisePickerView { exercises in exercises.forEach { addExercise($0) } }
         }
@@ -318,9 +327,11 @@ struct ActiveWorkoutView: View {
         sessionExercise.session = session
         modelContext.insert(sessionExercise)
 
-        let set = SessionSet(setNumber: 1)
-        set.sessionExercise = sessionExercise
-        modelContext.insert(set)
+        for i in 1...3 {
+            let set = SessionSet(setNumber: i)
+            set.sessionExercise = sessionExercise
+            modelContext.insert(set)
+        }
 
         try? modelContext.save()
     }
