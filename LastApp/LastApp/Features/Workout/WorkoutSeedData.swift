@@ -2,6 +2,101 @@
 import Foundation
 
 enum WorkoutSeedData {
+
+    // MARK: - Routine Templates
+    // Each tuple: (routine name, [exercise name])
+    // Exercise names must match exactly those in `exercises` below.
+
+    static var routineTemplates: [(name: String, exercises: [String])] {
+        [
+            // ── Push / Pull / Legs ──────────────────────────────────────
+            (
+                "PPL – Push",
+                ["Bench Press", "Overhead Press", "Incline Bench Press",
+                 "Lateral Raise", "Triceps Pushdown", "Skull Crusher"]
+            ),
+            (
+                "PPL – Pull",
+                ["Pull Up", "Bent Over Row", "Lat Pulldown",
+                 "Seated Row", "Barbell Curl", "Face Pull"]
+            ),
+            (
+                "PPL – Legs",
+                ["Squat", "Romanian Deadlift", "Leg Press",
+                 "Leg Extension", "Leg Curl", "Calf Raise"]
+            ),
+
+            // ── Upper / Lower ───────────────────────────────────────────
+            (
+                "Upper / Lower – Upper",
+                ["Bench Press", "Bent Over Row", "Overhead Press",
+                 "Pull Up", "Barbell Curl", "Triceps Pushdown"]
+            ),
+            (
+                "Upper / Lower – Lower",
+                ["Squat", "Romanian Deadlift", "Leg Press",
+                 "Leg Extension", "Leg Curl", "Calf Raise"]
+            ),
+
+            // ── Full Body ───────────────────────────────────────────────
+            (
+                "Full Body A",
+                ["Squat", "Bench Press", "Bent Over Row",
+                 "Overhead Press", "Barbell Curl", "Plank"]
+            ),
+            (
+                "Full Body B",
+                ["Deadlift", "Incline Bench Press", "Pull Up",
+                 "Lateral Raise", "Hammer Curl", "Hanging Leg Raise"]
+            ),
+
+            // ── Bro Split ───────────────────────────────────────────────
+            (
+                "Chest Day",
+                ["Bench Press", "Incline Bench Press", "Cable Fly",
+                 "Push Up", "Chest Dip"]
+            ),
+            (
+                "Back Day",
+                ["Deadlift", "Pull Up", "Bent Over Row",
+                 "Lat Pulldown", "Seated Row"]
+            ),
+            (
+                "Shoulder Day",
+                ["Overhead Press", "Lateral Raise", "Face Pull", "Arnold Press"]
+            ),
+            (
+                "Arms Day",
+                ["Barbell Curl", "Hammer Curl", "Preacher Curl",
+                 "Triceps Pushdown", "Skull Crusher", "Overhead Extension"]
+            ),
+            (
+                "Leg Day",
+                ["Squat", "Leg Press", "Romanian Deadlift",
+                 "Leg Extension", "Leg Curl", "Calf Raise"]
+            ),
+
+            // ── Arnold Split ────────────────────────────────────────────
+            (
+                "Arnold – Chest & Back",
+                ["Bench Press", "Incline Bench Press", "Cable Fly",
+                 "Pull Up", "Bent Over Row", "Lat Pulldown"]
+            ),
+            (
+                "Arnold – Shoulders & Arms",
+                ["Overhead Press", "Arnold Press", "Lateral Raise",
+                 "Barbell Curl", "Hammer Curl", "Triceps Pushdown", "Skull Crusher"]
+            ),
+            (
+                "Arnold – Legs & Core",
+                ["Squat", "Leg Press", "Romanian Deadlift",
+                 "Leg Curl", "Calf Raise", "Plank", "Hanging Leg Raise"]
+            ),
+        ]
+    }
+
+    // MARK: - Exercises
+
     static var exercises: [Exercise] {
         [
             // Chest
