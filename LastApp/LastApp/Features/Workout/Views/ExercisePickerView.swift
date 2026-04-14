@@ -295,7 +295,7 @@ struct ExercisePickerView: View {
                                                isCustom: true)
                         modelContext.insert(exercise)
                         try? modelContext.save()
-                        onSelect(exercise)
+                        onSelect([exercise])
                         showingCreateForm = false
                         dismiss()
                     }
