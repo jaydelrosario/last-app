@@ -7,11 +7,19 @@ struct SettingsView: View {
     @Query(sort: \FeatureConfig.sortOrder) private var featureConfigs: [FeatureConfig]
     @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
     @AppStorage("weightUnit") private var weightUnit: String = "lbs"
+    @AppStorage("weekStartsOnMonday") private var weekStartsOnMonday: Bool = false
 
     private let restTimerOptions = [30, 60, 90, 120, 180, 300]
 
     var body: some View {
         List {
+            Section("Habits") {
+                Picker("Week Starts On", selection: $weekStartsOnMonday) {
+                    Text("Sunday").tag(false)
+                    Text("Monday").tag(true)
+                }
+            }
+
             Section("Workout") {
                 Picker("Rest Timer", selection: $restTimerDuration) {
                     ForEach(restTimerOptions, id: \.self) { seconds in

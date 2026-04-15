@@ -11,6 +11,7 @@ struct HabitListView: View {
     @State private var editingStack: HabitStack?
     @State private var selectedHabit: Habit?
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: .now)
+    @AppStorage("weekStartsOnMonday") private var weekStartsOnMonday: Bool = false
 
     private var viewModel: HabitViewModel {
         HabitViewModel(context: modelContext)
@@ -62,23 +63,27 @@ struct HabitListView: View {
     private var weekStrip: some View {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
+        // Determine start of week based on preference
+        let firstWeekday = weekStartsOnMonday ? 2 : 1 // 1=Sun, 2=Mon
         let weekday = calendar.component(.weekday, from: today)
-        let startOfWeek = calendar.date(byAdding: .day, value: -(weekday - 1), to: today)!
+        let daysFromStart = (weekday - firstWeekday + 7) % 7
+        let startOfWeek = calendar.date(byAdding: .day, value: -daysFromStart, to: today)!
         let days = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: startOfWeek) }
         let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
         return HStack(spacing: 0) {
-            ForEach(Array(days.enumerated()), id: \.offset) { i, day in
+            ForEach(Array(days.enumerated()), id: \.offset) { _, day in
                 let isToday = calendar.isDate(day, inSameDayAs: today)
                 let isSelected = calendar.isDate(day, inSameDayAs: selectedDate)
                 let dayNum = calendar.component(.day, from: day)
+                let weekdayIndex = calendar.component(.weekday, from: day) - 1
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         selectedDate = calendar.startOfDay(for: day)
                     }
                 } label: {
                     VStack(spacing: 4) {
-                        Text(dayNames[i])
+                        Text(dayNames[weekdayIndex])
                             .font(.system(.caption2, weight: .medium))
                             .foregroundStyle(isSelected ? .primary : .tertiary)
                         ZStack {
@@ -142,11 +147,11 @@ struct HabitListView: View {
                             .padding(.horizontal, AppTheme.padding)
 
                         ForEach(stacks) { stack in
-                            HabitStackRowView(stack: stack) {
+                            HabitStackRowView(stack: stack, date: selectedDate, onEdit: {
                                 editingStack = stack
-                            }
-                            .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: 20))
-                            .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+                            }, onToggle: { habit in
+                                withAnimation { viewModel.toggle(habit, for: selectedDate) }
+                            })
                             .padding(.horizontal, AppTheme.padding)
                             .contextMenu {
                                 Button(role: .destructive) {
