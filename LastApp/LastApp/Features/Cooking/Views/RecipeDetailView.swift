@@ -15,7 +15,6 @@ struct RecipeDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                heroImage
                 titleCard
                 Divider().padding(.horizontal, AppTheme.padding)
                 servingsStepper
@@ -24,6 +23,8 @@ struct RecipeDetailView: View {
                 Divider().padding(.horizontal, AppTheme.padding)
                 stepsSection
                 startCookingButton
+                Divider().padding(.horizontal, AppTheme.padding)
+                heroImage
                 Spacer(minLength: 32)
             }
         }
