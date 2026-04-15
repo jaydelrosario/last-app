@@ -19,7 +19,7 @@ struct HabitListView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             Group {
                 if habits.isEmpty && stacks.isEmpty {

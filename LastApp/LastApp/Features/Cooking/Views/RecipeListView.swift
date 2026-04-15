@@ -13,6 +13,7 @@ struct RecipeListView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            Color.appBackground.ignoresSafeArea()
             Group {
                 if filteredRecipes.isEmpty {
                     emptyState

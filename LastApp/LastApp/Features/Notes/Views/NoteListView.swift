@@ -33,6 +33,7 @@ struct NoteListView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            Color.appBackground.ignoresSafeArea()
             VStack(spacing: 0) {
                 // Search bar
                 HStack {

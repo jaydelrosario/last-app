@@ -147,7 +147,7 @@ struct ExercisePickerView: View {
                 }
             }
             .animation(.spring(response: 0.3), value: selectedIDs.isEmpty)
-            .background(Color(uiColor: .systemGroupedBackground))
+            .background(Color.appBackground)
             .navigationTitle("Add Exercise")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

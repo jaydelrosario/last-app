@@ -16,6 +16,7 @@ struct TodayView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            Color.appBackground.ignoresSafeArea()
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     if !habits.isEmpty {

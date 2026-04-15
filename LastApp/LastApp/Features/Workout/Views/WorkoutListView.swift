@@ -20,7 +20,7 @@ struct WorkoutListView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {

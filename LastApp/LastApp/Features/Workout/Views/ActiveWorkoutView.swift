@@ -78,7 +78,7 @@ struct ActiveWorkoutView: View {
                     }
                     .padding(.top, 16)
                 }
-                .background(Color(uiColor: .systemGroupedBackground))
+                .background(Color.appBackground)
 
                 if let remaining = restRemaining {
                     restTimerBanner(remaining: remaining)

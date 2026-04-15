@@ -4,8 +4,15 @@ import UIKit
 
 // MARK: - App Colors
 extension Color {
-    /// Teal accent: #14b8a6
-    static let appAccent = Color(red: 0.082, green: 0.722, blue: 0.647)
+    /// Orange accent: #F97316
+    static let appAccent = Color(red: 0.976, green: 0.451, blue: 0.086)
+
+    /// Warm cream background (light: #F0EDE8, dark: system)
+    static let appBackground = Color(UIColor { trait in
+        trait.userInterfaceStyle == .dark
+            ? UIColor.systemGroupedBackground
+            : UIColor(red: 0.941, green: 0.929, blue: 0.910, alpha: 1)
+    })
 
     static func priorityColor(_ priority: Priority) -> Color {
         switch priority {

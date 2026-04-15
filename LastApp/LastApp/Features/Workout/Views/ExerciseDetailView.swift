@@ -67,7 +67,7 @@ struct ExerciseDetailView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .animation(.easeInOut(duration: 0.2), value: selectedTab)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Color.appBackground)
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
     }

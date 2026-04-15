@@ -75,7 +75,7 @@ struct WorkoutSessionDetailView: View {
             .padding(.vertical, 16)
             .padding(.bottom, 24)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Color.appBackground)
         .navigationTitle(session.startedAt.formatted(date: .abbreviated, time: .shortened))
         .navigationBarTitleDisplayMode(.inline)
     }

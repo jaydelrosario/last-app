@@ -90,6 +90,7 @@ struct ContentView: View {
             set: { appState.navigationPath = $0 }
         )) {
             destinationView
+                .id(appState.selectedDestination)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button {

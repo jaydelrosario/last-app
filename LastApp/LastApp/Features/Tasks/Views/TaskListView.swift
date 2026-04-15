@@ -17,6 +17,7 @@ struct TaskListView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            Color.appBackground.ignoresSafeArea()
             Group {
                 if filteredTasks.isEmpty {
                     emptyState
