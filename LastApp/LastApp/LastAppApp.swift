@@ -25,6 +25,7 @@ struct LastAppApp: App {
         WindowGroup {
             ContentView()
                 .environment(appState)
+                .preferredColorScheme(.light)
                 .task {
                     seedFeaturesIfNeeded()
                     seedExercisesIfNeeded()
