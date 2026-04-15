@@ -226,7 +226,7 @@ private struct SwipeNoteRow: View {
                         .foregroundStyle(.white)
                         .frame(width: actionWidth)
                         .frame(maxHeight: .infinity)
-                        .background(Color.red)
+                        .background(Color(red: 0.85, green: 0.25, blue: 0.35))
                 }
                 .buttonStyle(.plain)
             }
@@ -237,9 +237,10 @@ private struct SwipeNoteRow: View {
             noteContent
                 .offset(x: offset)
         }
-        .clipped()
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
+        .padding(.horizontal, AppTheme.padding)
+        .padding(.vertical, 5)
         .simultaneousGesture(
             DragGesture(minimumDistance: 10, coordinateSpace: .local)
                 .onChanged { value in

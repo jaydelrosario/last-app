@@ -53,14 +53,19 @@ struct SidebarView: View {
             .padding(.bottom, 16)
     }
 
+    @AppStorage("showInbox") private var showInbox: Bool = true
+    @AppStorage("showToday") private var showToday: Bool = true
+    @AppStorage("showUpcoming") private var showUpcoming: Bool = true
+    @AppStorage("showCompleted") private var showCompleted: Bool = true
+
     // MARK: - Smart lists
 
     private var smartListsSection: some View {
         Group {
-            sidebarRow(icon: "tray", label: "Inbox", destination: .inbox)
-            sidebarRow(icon: "sun.max", label: "Today", destination: .today)
-            sidebarRow(icon: "calendar", label: "Upcoming", destination: .upcoming)
-            sidebarRow(icon: "checkmark.circle", label: "Completed", destination: .completed)
+            if showInbox    { sidebarRow(icon: "tray",             label: "Inbox",     destination: .inbox) }
+            if showToday    { sidebarRow(icon: "sun.max",          label: "Today",     destination: .today) }
+            if showUpcoming { sidebarRow(icon: "calendar",         label: "Upcoming",  destination: .upcoming) }
+            if showCompleted{ sidebarRow(icon: "checkmark.circle", label: "Completed", destination: .completed) }
         }
     }
 

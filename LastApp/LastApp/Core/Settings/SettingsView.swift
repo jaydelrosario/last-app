@@ -8,11 +8,22 @@ struct SettingsView: View {
     @AppStorage("restTimerDuration") private var restTimerDuration: Int = 60
     @AppStorage("weightUnit") private var weightUnit: String = "lbs"
     @AppStorage("weekStartsOnMonday") private var weekStartsOnMonday: Bool = false
+    @AppStorage("showInbox") private var showInbox: Bool = true
+    @AppStorage("showToday") private var showToday: Bool = true
+    @AppStorage("showUpcoming") private var showUpcoming: Bool = true
+    @AppStorage("showCompleted") private var showCompleted: Bool = true
 
     private let restTimerOptions = [30, 60, 90, 120, 180, 300]
 
     var body: some View {
         List {
+            Section("Tasks") {
+                Toggle("Show Inbox", isOn: $showInbox)
+                Toggle("Show Today", isOn: $showToday)
+                Toggle("Show Upcoming", isOn: $showUpcoming)
+                Toggle("Show Completed", isOn: $showCompleted)
+            }
+
             Section("Habits") {
                 Picker("Week Starts On", selection: $weekStartsOnMonday) {
                     Text("Sunday").tag(false)

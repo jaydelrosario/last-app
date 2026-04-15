@@ -57,7 +57,18 @@ final class Habit {
 
     /// Deterministic accent color from id — used in habit stack dots
     var accentColor: Color {
-        let palette: [Color] = [.orange, .green, .blue, .purple, .red, .yellow, .mint, .cyan, .pink, .teal]
+        let palette: [Color] = [
+            .orange,
+            Color(red: 0.612, green: 0.196, blue: 0.898), // vivid purple
+            Color(red: 0.239, green: 0.510, blue: 0.976), // bright blue
+            Color(red: 0.459, green: 0.235, blue: 0.804), // indigo
+            Color(red: 0.957, green: 0.416, blue: 0.631), // rose/pink
+            Color(red: 0.961, green: 0.722, blue: 0.157), // warm amber
+            Color(red: 0.118, green: 0.686, blue: 0.882), // sky blue
+            Color(red: 0.431, green: 0.835, blue: 0.749), // aqua mint
+            Color(red: 0.984, green: 0.502, blue: 0.251), // coral
+            Color(red: 0.686, green: 0.478, blue: 0.992), // lavender
+        ]
         let index = Int(id.uuidString.prefix(2), radix: 16) ?? 0
         return palette[index % palette.count]
     }

@@ -72,8 +72,13 @@ struct TaskListView: View {
                         }
                     }
                 }
-                .listRowInsets(EdgeInsets())
+                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
                 .listRowSeparator(.hidden)
+                .listRowBackground(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(Color(uiColor: .systemBackground))
+                        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                )
             }
             .onDelete { offsets in
                 viewModel.delete(offsets.map { filteredTasks[$0] })
@@ -85,6 +90,7 @@ struct TaskListView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .navigationDestination(for: TaskItem.self) { task in
             TaskDetailView(task: task)
         }
