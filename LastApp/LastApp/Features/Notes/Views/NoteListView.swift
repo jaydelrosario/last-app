@@ -235,28 +235,31 @@ private struct SwipeNoteRow: View {
             // Note content (slides left up to max reveal)
             noteContent
                 .offset(x: offset)
-                .gesture(
-                    DragGesture(minimumDistance: 12, coordinateSpace: .local)
-                        .onChanged { value in
-                            let maxReveal = actionWidth * 2
-                            offset = min(0, max(-maxReveal, anchorOffset + value.translation.width))
-                        }
-                        .onEnded { _ in
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                if -offset > actionWidth {
-                                    offset = -actionWidth * 2
-                                    anchorOffset = -actionWidth * 2
-                                } else {
-                                    offset = 0
-                                    anchorOffset = 0
-                                }
-                            }
-                        }
-                )
         }
         .clipped()
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 10, coordinateSpace: .local)
+                .onChanged { value in
+                    // Only activate for primarily horizontal drags
+                    guard abs(value.translation.width) > abs(value.translation.height) * 1.2 else { return }
+                    let maxReveal = actionWidth * 2
+                    offset = min(0, max(-maxReveal, anchorOffset + value.translation.width))
+                }
+                .onEnded { value in
+                    guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        if -offset > actionWidth {
+                            offset = -actionWidth * 2
+                            anchorOffset = -actionWidth * 2
+                        } else {
+                            offset = 0
+                            anchorOffset = 0
+                        }
+                    }
+                }
+        )
     }
 
     private var noteContent: some View {

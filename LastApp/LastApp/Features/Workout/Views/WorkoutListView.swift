@@ -8,6 +8,7 @@ struct WorkoutListView: View {
     @Query(sort: \WorkoutSession.startedAt, order: .reverse) private var allSessions: [WorkoutSession]
 
     @State private var showingRoutineBuilder = false
+    @State private var showingTemplates = false
     @State private var editingRoutine: Routine? = nil
     @State private var activeSession: WorkoutSession? = nil
     @State private var showingActiveWorkout = false
@@ -59,25 +60,47 @@ struct WorkoutListView: View {
                         }
                     }
 
-                    Button {
-                        showingRoutineBuilder = true
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "plus")
-                                .font(.system(.body, weight: .medium))
-                            Text("Add new routine")
-                                .font(.system(.body, weight: .medium))
+                    HStack(spacing: 10) {
+                        Button {
+                            showingRoutineBuilder = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus")
+                                    .font(.system(.body, weight: .medium))
+                                Text("Add new")
+                                    .font(.system(.body, weight: .medium))
+                            }
+                            .foregroundStyle(Color.appAccent)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                                    .foregroundStyle(Color.appAccent.opacity(0.5))
+                            )
                         }
-                        .foregroundStyle(Color.appAccent)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
-                                .foregroundStyle(Color.appAccent.opacity(0.5))
-                        )
+                        .buttonStyle(.plain)
+
+                        Button {
+                            showingTemplates = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "square.grid.2x2")
+                                    .font(.system(.body, weight: .medium))
+                                Text("Templates")
+                                    .font(.system(.body, weight: .medium))
+                            }
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                                    .foregroundStyle(Color.secondary.opacity(0.3))
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                     .padding(.horizontal, AppTheme.padding)
                 }
 
@@ -113,6 +136,9 @@ struct WorkoutListView: View {
         }
         .sheet(isPresented: $showingRoutineBuilder) {
             RoutineBuilderView()
+        }
+        .sheet(isPresented: $showingTemplates) {
+            RoutineTemplatesView()
         }
         .sheet(item: $editingRoutine) { routine in
             RoutineBuilderView(existingRoutine: routine)

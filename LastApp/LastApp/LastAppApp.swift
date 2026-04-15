@@ -28,7 +28,6 @@ struct LastAppApp: App {
                 .task {
                     seedFeaturesIfNeeded()
                     seedExercisesIfNeeded()
-                    seedRoutineTemplatesIfNeeded()
                     _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
                 }
         }
@@ -71,27 +70,4 @@ struct LastAppApp: App {
         try? context.save()
     }
 
-    @MainActor
-    private func seedRoutineTemplatesIfNeeded() {
-        let context = container.mainContext
-        let routineDescriptor = FetchDescriptor<Routine>()
-        let existingRoutines = (try? context.fetch(routineDescriptor)) ?? []
-        guard existingRoutines.isEmpty else { return }
-
-        let exerciseDescriptor = FetchDescriptor<Exercise>()
-        let exercises = (try? context.fetch(exerciseDescriptor)) ?? []
-        let exerciseByName = Dictionary(exercises.map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
-
-        for template in WorkoutSeedData.routineTemplates {
-            let routine = Routine(name: template.name)
-            context.insert(routine)
-            for (i, exerciseName) in template.exercises.enumerated() {
-                guard let exercise = exerciseByName[exerciseName] else { continue }
-                let entry = RoutineEntry(exercise: exercise, setCount: 3, sortOrder: i)
-                entry.routine = routine
-                context.insert(entry)
-            }
-        }
-        try? context.save()
-    }
 }
