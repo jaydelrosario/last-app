@@ -8,6 +8,7 @@ struct HabitListView: View {
     @Query(sort: \HabitStack.createdAt) private var stacks: [HabitStack]
     @State private var showingCreation = false
     @State private var showingStackCreation = false
+    @State private var showingTemplates = false
     @State private var editingStack: HabitStack?
     @State private var selectedHabit: Habit?
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: .now)
@@ -37,6 +38,9 @@ struct HabitListView: View {
                 Button { showingStackCreation = true } label: {
                     Label("New Habit Stack", systemImage: "square.stack")
                 }
+                Button { showingTemplates = true } label: {
+                    Label("From Template", systemImage: "square.grid.2x2")
+                }
             } label: {
                 Image(systemName: "plus")
                     .font(.system(.title2, weight: .medium))
@@ -52,6 +56,7 @@ struct HabitListView: View {
         .navigationBarTitleDisplayMode(.large)
         .sheet(isPresented: $showingCreation) { HabitCreationView() }
         .sheet(isPresented: $showingStackCreation) { HabitStackView() }
+        .sheet(isPresented: $showingTemplates) { HabitTemplatesView() }
         .sheet(item: $editingStack) { stack in HabitStackView(existingStack: stack) }
         .navigationDestination(item: $selectedHabit) { habit in
             HabitDetailView(habit: habit)

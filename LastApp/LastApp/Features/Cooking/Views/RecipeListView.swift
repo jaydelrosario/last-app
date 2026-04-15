@@ -9,6 +9,7 @@ struct RecipeListView: View {
     @State private var searchText = ""
     @State private var selectedCollection: RecipeCollection? = nil
     @State private var showingCreation = false
+    @State private var showingTemplates = false
     @State private var selectedRecipe: Recipe? = nil
 
     var body: some View {
@@ -31,6 +32,7 @@ struct RecipeListView: View {
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, prompt: "Search recipes")
         .sheet(isPresented: $showingCreation) { RecipeCreationView() }
+        .sheet(isPresented: $showingTemplates) { CookingTemplatesView() }
         .navigationDestination(item: $selectedRecipe) { RecipeDetailView(recipe: $0) }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -193,8 +195,13 @@ struct RecipeListView: View {
     // MARK: - FAB
 
     private var fab: some View {
-        Button {
-            showingCreation = true
+        Menu {
+            Button { showingCreation = true } label: {
+                Label("New Recipe", systemImage: "plus")
+            }
+            Button { showingTemplates = true } label: {
+                Label("From Template", systemImage: "square.grid.2x2")
+            }
         } label: {
             Image(systemName: "plus")
                 .font(.system(.title2, weight: .medium))
