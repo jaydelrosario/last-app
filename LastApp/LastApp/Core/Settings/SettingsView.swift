@@ -82,10 +82,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                .disabled({
-                    if case .importing = importState { return true }
-                    return false
-                }())
+                .disabled(importState.isImporting)
 
                 switch importState {
                 case .success(let result):
@@ -150,6 +147,11 @@ struct SettingsView: View {
         case importing
         case success(ImportResult)
         case failure(String)
+
+        var isImporting: Bool {
+            if case .importing = self { return true }
+            return false
+        }
     }
 }
 
