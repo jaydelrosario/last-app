@@ -21,7 +21,7 @@ struct TickTickImporter {
         //   row 2: Status legend (multi-line quoted field)
         //   row 3: Column headers
         //   row 4+: Data
-        guard rows.count > 4 else { throw ImportError.invalidFormat }
+        guard rows.count >= 4 else { throw ImportError.invalidFormat }
         let dataRows = Array(rows.dropFirst(4))
 
         // Build dedup set from existing TaskItems
@@ -59,7 +59,7 @@ struct TickTickImporter {
 
             guard !title.isEmpty else { continue }
 
-            // Folder without list → no valid destination, skip
+            // Folder name present but list name missing → skip (no list to assign to)
             if !folderName.isEmpty && listName.isEmpty { continue }
 
             // Dedup by tickTickId
@@ -232,17 +232,22 @@ struct TickTickImporter {
 
     // MARK: - Helpers
 
+    private static let iso8601: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f
+    }()
+
+    private static let imageRegex = try! NSRegularExpression(pattern: #"!\[image\]\([^)]+\)"#)
+
     private func parseDate(_ str: String) -> Date? {
         guard !str.isEmpty else { return nil }
-        let fmt = ISO8601DateFormatter()
-        fmt.formatOptions = [.withInternetDateTime]
-        return fmt.date(from: str)
+        return Self.iso8601.date(from: str)
     }
 
     private func stripMarkdownImages(_ content: String) -> String {
-        guard let regex = try? NSRegularExpression(pattern: #"!\[image\]\([^)]+\)"#) else { return content }
         let range = NSRange(content.startIndex..., in: content)
-        return regex.stringByReplacingMatches(in: content, range: range, withTemplate: "")
+        return Self.imageRegex.stringByReplacingMatches(in: content, range: range, withTemplate: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -253,25 +258,21 @@ struct TickTickImporter {
         var isChecked = false
         var started = false
 
+        func flush() {
+            let trimmed = current.trimmingCharacters(in: .whitespacesAndNewlines)
+            if started && !trimmed.isEmpty { items.append((trimmed, isChecked)) }
+        }
+
         for scalar in content.unicodeScalars {
             if scalar.value == 0x25AB { // ▫ unchecked
-                if started, !current.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    items.append((current.trimmingCharacters(in: .whitespacesAndNewlines), isChecked))
-                }
-                current = ""; isChecked = false; started = true
+                flush(); current = ""; isChecked = false; started = true
             } else if scalar.value == 0x25AA { // ▪ checked
-                if started, !current.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    items.append((current.trimmingCharacters(in: .whitespacesAndNewlines), isChecked))
-                }
-                current = ""; isChecked = true; started = true
+                flush(); current = ""; isChecked = true; started = true
             } else if started {
                 current.append(Character(scalar))
             }
         }
-
-        if started, !current.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            items.append((current.trimmingCharacters(in: .whitespacesAndNewlines), isChecked))
-        }
+        flush()
 
         return items
     }
