@@ -13,6 +13,7 @@ final class TaskItem {
     var completedAt: Date? = nil
     var sortOrder: Int = 0
     var tags: [String] = []
+    var tickTickId: String? = nil
 
     @Relationship(deleteRule: .nullify) var list: TaskList?
     @Relationship(deleteRule: .cascade) var subtasks: [TaskItem] = []
