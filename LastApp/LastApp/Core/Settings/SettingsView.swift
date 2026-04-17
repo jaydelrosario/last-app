@@ -1,6 +1,7 @@
 // LastApp/Core/Settings/SettingsView.swift
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -12,6 +13,9 @@ struct SettingsView: View {
     @AppStorage("showToday") private var showToday: Bool = true
     @AppStorage("showUpcoming") private var showUpcoming: Bool = true
     @AppStorage("showCompleted") private var showCompleted: Bool = true
+
+    @State private var showingFilePicker = false
+    @State private var importState: ImportState = .idle
 
     private let restTimerOptions = [30, 60, 90, 120, 180, 300]
 
@@ -65,6 +69,59 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Data") {
+                Button {
+                    showingFilePicker = true
+                } label: {
+                    HStack {
+                        Label("Import from TickTick", systemImage: "arrow.down.doc")
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if case .importing = importState {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled({
+                    if case .importing = importState { return true }
+                    return false
+                }())
+
+                switch importState {
+                case .success(let result):
+                    Text("\(result.foldersCreated) folders · \(result.listsCreated) lists · \(result.tasksCreated) tasks imported, \(result.skipped) skipped")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                case .failure(let message):
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                default:
+                    EmptyView()
+                }
+            }
+            .fileImporter(
+                isPresented: $showingFilePicker,
+                allowedContentTypes: [.commaSeparatedText]
+            ) { result in
+                switch result {
+                case .success(let url):
+                    let accessed = url.startAccessingSecurityScopedResource()
+                    importState = .importing
+                    Task {
+                        defer { if accessed { url.stopAccessingSecurityScopedResource() } }
+                        do {
+                            let importResult = try await TickTickImporter().run(url: url, context: modelContext)
+                            importState = .success(importResult)
+                        } catch {
+                            importState = .failure(error.localizedDescription)
+                        }
+                    }
+                case .failure(let error):
+                    importState = .failure(error.localizedDescription)
+                }
+            }
+
             Section("About") {
                 HStack {
                     Text("Version")
@@ -86,6 +143,13 @@ struct SettingsView: View {
         let mins = seconds / 60
         let secs = seconds % 60
         return secs == 0 ? "\(mins) min" : "\(mins)m \(secs)s"
+    }
+
+    private enum ImportState {
+        case idle
+        case importing
+        case success(ImportResult)
+        case failure(String)
     }
 }
 
