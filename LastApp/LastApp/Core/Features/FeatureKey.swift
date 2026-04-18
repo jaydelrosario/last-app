@@ -6,4 +6,5 @@ enum FeatureKey: String, Codable, CaseIterable {
     case workout = "workout"
     case cooking = "cooking"
     case notes = "notes"
+    case weather = "weather"
 }

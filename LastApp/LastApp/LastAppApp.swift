@@ -41,6 +41,7 @@ struct LastAppApp: App {
         FeatureRegistry.register(WorkoutFeature.definition)
         FeatureRegistry.register(CookingFeature.definition)
         FeatureRegistry.register(NotesFeature.definition)
+        FeatureRegistry.register(WeatherFeature.definition)
     }
 
     @MainActor

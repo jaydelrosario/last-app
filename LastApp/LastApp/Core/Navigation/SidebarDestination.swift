@@ -11,5 +11,6 @@ enum SidebarDestination: Hashable {
     case workout
     case cooking
     case notes
+    case weather
     case settings
 }

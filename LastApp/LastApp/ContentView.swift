@@ -120,6 +120,8 @@ struct ContentView: View {
             RecipeListView()
         case .notes:
             NoteListView()
+        case .weather:
+            WeatherView()
         case .settings:
             SettingsView()
         }
