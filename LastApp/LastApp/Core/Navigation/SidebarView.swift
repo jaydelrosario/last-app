@@ -33,7 +33,7 @@ struct SidebarView: View {
                 .padding(.vertical, 8)
             }
             Spacer()
-            settingsRow
+            QuickCaptureBar()
         }
         .frame(width: AppTheme.sidebarWidth)
         .background(.regularMaterial)
@@ -234,23 +234,6 @@ struct SidebarView: View {
                 )
             }
         }
-    }
-
-    // MARK: - Settings
-
-    private var settingsRow: some View {
-        Button {
-            appState.navigate(to: .settings)
-        } label: {
-            Label("Settings", systemImage: "gearshape")
-                .font(.system(.body, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - Helpers
