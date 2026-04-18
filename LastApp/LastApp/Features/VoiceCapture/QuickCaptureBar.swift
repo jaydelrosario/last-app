@@ -37,10 +37,10 @@ struct QuickCaptureBar: View {
                     showingTaskCreation = true
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(.body, weight: .medium))
+                        .font(.system(.title3, weight: .medium))
                         .foregroundStyle(Color.appAccent)
-                        .frame(width: 44, height: 44)
-                        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+                        .frame(width: 54, height: 52)
+                        .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
 
@@ -48,7 +48,8 @@ struct QuickCaptureBar: View {
                 MicButton(viewModel: voiceVM)
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 14)
+            .padding(.top, 14)
+            .padding(.bottom, 28)
         }
         .animation(.easeInOut(duration: 0.2), value: voiceVM.recordingState == .denied)
         .sheet(isPresented: $showingTaskCreation) {

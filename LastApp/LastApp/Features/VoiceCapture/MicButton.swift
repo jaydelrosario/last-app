@@ -38,9 +38,9 @@ struct MicButton: View {
         ZStack {
             // Pulse ring — only shown while recording
             if isRecording {
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.appAccent.opacity(pulsing ? 0 : 0.5), lineWidth: 1.5)
-                    .frame(width: 72, height: 52)
+                    .frame(width: 82, height: 62)
                     .scaleEffect(pulsing ? 1.22 : 1.0)
                     .animation(
                         .easeOut(duration: 0.7).repeatForever(autoreverses: false),
@@ -51,12 +51,12 @@ struct MicButton: View {
             }
 
             // Button body
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(buttonFill)
-                .frame(width: 64, height: 44)
+                .frame(width: 74, height: 52)
                 .overlay {
                     Image(systemName: isRecording ? "mic.fill" : "mic")
-                        .font(.system(.body, weight: .medium))
+                        .font(.system(.title3, weight: .medium))
                         .foregroundStyle(iconColor)
                 }
                 .animation(.spring(response: 0.2), value: isRecording)
