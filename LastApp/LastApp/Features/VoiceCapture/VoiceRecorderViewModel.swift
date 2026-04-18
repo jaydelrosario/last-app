@@ -48,7 +48,7 @@ final class VoiceRecorderViewModel {
         stopAudio()
         let text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else {
-            recordingState = .idle
+            recordingState = .error("No speech detected")
             transcript = ""
             return
         }

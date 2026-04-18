@@ -9,11 +9,12 @@ struct MicButton: View {
     @State private var isRecording = false
     @State private var dragOffset: CGFloat = 0
     @State private var pulsing = false
+    @State private var pressStartTime: Date? = nil
 
     private var destinationHint: VoiceRecorderViewModel.Destination? {
         guard isRecording else { return nil }
-        if dragOffset < -40 { return .task }
-        if dragOffset > 40 { return .note }
+        if dragOffset < -20 { return .task }
+        if dragOffset > 20 { return .note }
         return nil
     }
 
@@ -54,11 +55,11 @@ struct MicButton: View {
                 .fill(buttonFill)
                 .frame(width: 64, height: 44)
                 .overlay {
-                    Image(systemName: "mic.fill")
+                    Image(systemName: isRecording ? "mic.fill" : "mic")
                         .font(.system(.body, weight: .medium))
                         .foregroundStyle(iconColor)
                 }
-                .animation(.spring(response: 0.2), value: destinationHint == nil)
+                .animation(.spring(response: 0.2), value: isRecording)
         }
         // Destination labels
         .overlay(alignment: .leading) {
@@ -81,39 +82,43 @@ struct MicButton: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.85)))
             }
         }
-        .gesture(combinedGesture)
-        .contentShape(RoundedRectangle(cornerRadius: 10))
-        .disabled(viewModel.recordingState == .denied)
-    }
-
-    // MARK: - Gesture
-
-    private var combinedGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.3)
-            .onEnded { _ in
-                isRecording = true
-                viewModel.startRecording()
-            }
-            .simultaneously(with:
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        guard isRecording else { return }
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    if pressStartTime == nil {
+                        pressStartTime = Date()
+                    }
+                    let elapsed = pressStartTime.map { Date().timeIntervalSince($0) } ?? 0
+                    if elapsed >= 0.3 && !isRecording {
+                        isRecording = true
+                        viewModel.startRecording()
+                    }
+                    if isRecording {
                         withAnimation(.interactiveSpring()) {
                             dragOffset = value.translation.width
                         }
                     }
-                    .onEnded { value in
-                        guard isRecording else { return }
-                        let offset = value.translation.width
+                }
+                .onEnded { value in
+                    defer {
+                        pressStartTime = nil
                         isRecording = false
                         withAnimation(.spring(response: 0.2)) { dragOffset = 0 }
-                        if abs(offset) >= 40 {
-                            let dest: VoiceRecorderViewModel.Destination = offset < 0 ? .task : .note
-                            viewModel.finish(destination: dest, context: modelContext)
-                        } else {
-                            viewModel.cancel()
-                        }
                     }
-            )
+                    guard isRecording else {
+                        viewModel.cancel()
+                        return
+                    }
+                    let offset = value.translation.width
+                    if abs(offset) >= 20 {
+                        let dest: VoiceRecorderViewModel.Destination = offset < 0 ? .task : .note
+                        viewModel.finish(destination: dest, context: modelContext)
+                    } else {
+                        viewModel.cancel()
+                    }
+                }
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 10))
+        .disabled(viewModel.recordingState == .denied)
     }
 }
