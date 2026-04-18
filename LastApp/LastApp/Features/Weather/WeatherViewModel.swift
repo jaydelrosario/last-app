@@ -4,6 +4,7 @@ import WeatherKit
 import CoreLocation
 
 @Observable
+@MainActor
 final class WeatherViewModel: NSObject, CLLocationManagerDelegate {
 
     enum LoadingState {
@@ -50,38 +51,44 @@ final class WeatherViewModel: NSObject, CLLocationManagerDelegate {
 
     // MARK: - CLLocationManagerDelegate
 
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        switch manager.authorizationStatus {
-        case .authorizedWhenInUse, .authorizedAlways:
-            manager.requestLocation()
-        case .denied, .restricted:
-            state = .denied
-        default:
-            break
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task { @MainActor in
+            switch manager.authorizationStatus {
+            case .authorizedWhenInUse, .authorizedAlways:
+                manager.requestLocation()
+            case .denied, .restricted:
+                state = .denied
+            @unknown default:
+                break
+            }
         }
     }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.first else { return }
-        lastLocation = location
-        fetchWeather(for: location)
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        Task { @MainActor in
+            lastLocation = location
+            fetchWeather(for: location)
+        }
     }
 
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        state = .error(error.localizedDescription)
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor in
+            state = .error(error.localizedDescription)
+        }
     }
 
     // MARK: - WeatherKit
 
     private func fetchWeather(for location: CLLocation) {
-        Task { @MainActor in
+        Task {
             do {
                 let weather = try await WeatherService.shared.weather(for: location)
-                self.currentWeather = weather.currentWeather
-                self.forecast = Array(weather.dailyForecast.prefix(10))
-                self.state = .loaded
+                currentWeather = weather.currentWeather
+                forecast = Array(weather.dailyForecast.prefix(10))
+                state = .loaded
             } catch {
-                self.state = .error(error.localizedDescription)
+                state = .error(error.localizedDescription)
             }
         }
     }
