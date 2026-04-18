@@ -124,6 +124,9 @@ final class VoiceRecorderViewModel {
             recognitionRequest.shouldReportPartialResults = true
             recognitionRequest.requiresOnDeviceRecognition = false
 
+            // Defensively remove any leftover tap before installing a fresh one
+            audioEngine.inputNode.removeTap(onBus: 0)
+
             let audioSession = AVAudioSession.sharedInstance()
             try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)

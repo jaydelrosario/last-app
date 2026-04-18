@@ -39,7 +39,7 @@ struct QuickCaptureBar: View {
                     Image(systemName: "plus")
                         .font(.system(.body, weight: .medium))
                         .foregroundStyle(Color.appAccent)
-                        .frame(width: 44, height: 36)
+                        .frame(width: 44, height: 44)
                         .background(Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
                 }
                 .buttonStyle(.plain)

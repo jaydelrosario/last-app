@@ -39,7 +39,7 @@ struct MicButton: View {
             if isRecording {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(Color.appAccent.opacity(pulsing ? 0 : 0.5), lineWidth: 1.5)
-                    .frame(width: 68, height: 40)
+                    .frame(width: 72, height: 52)
                     .scaleEffect(pulsing ? 1.22 : 1.0)
                     .animation(
                         .easeOut(duration: 0.7).repeatForever(autoreverses: false),
@@ -52,7 +52,7 @@ struct MicButton: View {
             // Button body
             RoundedRectangle(cornerRadius: 10)
                 .fill(buttonFill)
-                .frame(width: 60, height: 36)
+                .frame(width: 64, height: 44)
                 .overlay {
                     Image(systemName: "mic.fill")
                         .font(.system(.body, weight: .medium))
@@ -82,6 +82,7 @@ struct MicButton: View {
             }
         }
         .gesture(combinedGesture)
+        .contentShape(RoundedRectangle(cornerRadius: 10))
         .disabled(viewModel.recordingState == .denied)
     }
 
