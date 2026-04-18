@@ -143,23 +143,32 @@ final class VoiceRecorderViewModel {
                     guard let self else { return }
                     if let result {
                         self.transcript = result.bestTranscription.formattedString
+                        if result.isFinal {
+                            self.stopAudio()
+                        }
                     }
                     if let error {
                         let nsError = error as NSError
                         // Code 1110 = no speech detected — benign, ignore
                         guard !(nsError.domain == "kAFAssistantErrorDomain" && nsError.code == 1110) else { return }
+                        self.stopAudio()
                         self.recordingState = .error(error.localizedDescription)
                     }
                 }
             }
         } catch {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            recognitionRequest = nil
             recordingState = .error(error.localizedDescription)
         }
     }
 
     private func stopAudio() {
-        audioEngine.inputNode.removeTap(onBus: 0)
-        audioEngine.stop()
+        if audioEngine.isRunning {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            audioEngine.stop()
+        }
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionRequest = nil
